@@ -2,59 +2,57 @@ name: Build APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout code
-    - name: Checkout
-      uses: actions/checkout@v4
 
-    # Install dependencies
-    - name: Install dependencies
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Install System Dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip python3-pip openjdk-17-jdk
+        sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip
         pip install --upgrade pip
-        pip install buildozer cython
+        pip install cython==0.29.36 buildozer
 
-    # Setup Android SDK + NDK correctly
-    - name: Install Android SDK + NDK
+    - name: Prepare Android Directories
       run: |
-        mkdir -p $HOME/android
-        cd $HOME/android
+        mkdir -p $HOME/android/sdk
+        mkdir -p $HOME/android/ndk
 
-        # Download NDK r25b
-        wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-        unzip android-ndk-r25b-linux.zip
+    - name: Download Android NDK (r25b)
+      run: |
+        wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
+        unzip ndk.zip -d $HOME/android/ndk
 
-        # Download cmdline-tools
-        mkdir -p sdk/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip commandlinetools-linux-9477386_latest.zip -d sdk/cmdline-tools
-        mv sdk/cmdline-tools/cmdline-tools sdk/cmdline-tools/latest
+    - name: Install Android Commandline Tools
+      run: |
+        wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmd.zip
+        unzip cmd.zip -d $HOME/android/sdk/cmdline-tools
+        mv $HOME/android/sdk/cmdline-tools/cmdline-tools $HOME/android/sdk/cmdline-tools/latest
 
-        # Install SDK packages
-        yes | sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android/sdk \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.2"
+    - name: Install Required Android Packages
+      run: |
+        yes | $HOME/android/sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android/sdk \
+          "platform-tools" "build-tools;33.0.2" "platforms;android-33"
 
-    # Export environment variables
-    - name: Set ENV
+    - name: Export Android Paths
       run: |
         echo "ANDROIDSDK=$HOME/android/sdk" >> $GITHUB_ENV
-        echo "ANDROIDNDK=$HOME/android/android-ndk-r25b" >> $GITHUB_ENV
+        echo "ANDROIDNDK=$HOME/android/ndk/android-ndk-r25b" >> $GITHUB_ENV
         echo "PATH=$HOME/android/sdk/platform-tools:$HOME/android/sdk/cmdline-tools/latest/bin:$PATH" >> $GITHUB_ENV
 
-    # Build APK
-    - name: Build with Buildozer
-      run: buildozer android debug
+    - name: Build APK with Buildozer
+      run: |
+        buildozer android debug
 
-    # Upload APK artifact
-    - name: Upload APK
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: safespot-apk
