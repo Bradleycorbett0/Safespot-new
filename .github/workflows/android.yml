@@ -10,31 +10,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      # Force Python 3.10 (required by Buildozer)
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install System Dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3-pip
-        pip install --upgrade pip
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip libncurses5
+          pip install --upgrade pip
 
-    - name: Install Buildozer + distutils
-      run: |
-        pip install cython==0.29.36 buildozer
-        pip install setuptools  # includes distutils for Python 3.10
+      # Download Android SDK commandline tools
+      - name: Install Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk
+          cd $HOME/android-sdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          mkdir -p cmdline-tools
+          unzip cmdtools.zip -d cmdline-tools
+          mv cmdline-tools/cmdline-tools cmdline-tools/latest
 
-    - name: Build APK
-      run: |
-        buildozer -v android debug
+          yes | cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: safespot-apk
-        path: bin/*.apk
+      # Install Buildozer
+      - name: Install Buildozer
+        run: |
+          pip install cython==0.29.36 buildozer==1.5.0 setuptools
+
+      - name: Build APK
+        env:
+          ANDROIDSDK: $HOME/android-sdk
+          ANDROID_HOME: $HOME/android-sdk
+          ANDROID_NDK_HOME: $HOME/.buildozer/android/platform/android-ndk-r25b
+        run: |
+          buildozer -v android debug
+
+      # Upload final APK
+      - name: Upload apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: safespot-apk
+          path: bin/*.apk
