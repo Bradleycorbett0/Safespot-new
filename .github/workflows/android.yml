@@ -19,41 +19,34 @@ jobs:
         sudo apt update
         sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip
         pip install --upgrade pip
-        pip install cython==0.29.36 buildozer
+
+    - name: Install Buildozer
+      run: |
+        pip install cython==0.29.36 buildozer==0.4.6  # Check for the latest stable version
 
     - name: Prepare Android Directories
       run: |
-        mkdir -p $HOME/android/sdk
-        mkdir -p $HOME/android/ndk
+        mkdir -p $HOME/android/bin
+        mkdir -p $HOME/android/platforms
+        mkdir -p $HOME/android/build
+        mkdir -p $HOME/android/venv
 
-    - name: Download Android NDK (r25b)
+    - name: Set up Python Environment
       run: |
-        wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
-        unzip ndk.zip -d $HOME/android/ndk
+        python3 -m venv $HOME/android/venv
+        source $HOME/android/venv/bin/activate
+        pip install --upgrade pip
+        pip install cython==0.29.36 buildozer==0.4.6  # Ensure consistency
 
-    - name: Install Android Commandline Tools
+    - name: Build APK
       run: |
-        wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmd.zip
-        unzip cmd.zip -d $HOME/android/sdk/cmdline-tools
-        mv $HOME/android/sdk/cmdline-tools/cmdline-tools $HOME/android/sdk/cmdline-tools/latest
+        source $HOME/android/venv/bin/activate
+        cd <your_project_directory>  # Replace with your actual project directory
+        buildozer -v android debug
 
-    - name: Install Required Android Packages
-      run: |
-        yes | $HOME/android/sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android/sdk \
-          "platform-tools" "build-tools;33.0.2" "platforms;android-33"
-
-    - name: Export Android Paths
-      run: |
-        echo "ANDROIDSDK=$HOME/android/sdk" >> $GITHUB_ENV
-        echo "ANDROIDNDK=$HOME/android/ndk/android-ndk-r25b" >> $GITHUB_ENV
-        echo "PATH=$HOME/android/sdk/platform-tools:$HOME/android/sdk/cmdline-tools/latest/bin:$PATH" >> $GITHUB_ENV
-
-    - name: Build APK with Buildozer
-      run: |
-        buildozer android debug
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload APK
+      uses: actions/upload-artifact@v2
       with:
-        name: safespot-apk
-        path: bin/*.apk
+        name: my-app-debug
+        path: <your_project_directory>/bin/*.apk  # Adjust according to your output path
+```
