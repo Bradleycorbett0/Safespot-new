@@ -11,33 +11,33 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install System Dependencies
       run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip
-          pip install --upgrade pip
+        sudo apt update
+        sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip
+        pip install --upgrade pip
 
     - name: Install Buildozer
       run: |
-          pip install cython==0.29.36 buildozer
+        pip install cython==0.29.36 buildozer
 
     - name: Set up Python Environment
       run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install cython==0.29.36 buildozer
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install cython==0.29.36 buildozer
 
     - name: Build APK
       run: |
-          source venv/bin/activate
-          cd .
-          buildozer -v android debug
+        source venv/bin/activate
+        cd .
+        buildozer -v android debug
 
     - name: Upload APK Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: safespot-apk
         path: bin/*.apk
