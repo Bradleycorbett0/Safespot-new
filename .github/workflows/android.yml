@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout Code
       uses: actions/checkout@v3
 
@@ -49,4 +48,3 @@ jobs:
       with:
         name: my-app-debug
         path: <your_project_directory>/bin/*.apk  # Adjust according to your output path
-```
