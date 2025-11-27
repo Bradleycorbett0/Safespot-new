@@ -15,36 +15,29 @@ jobs:
 
     - name: Install System Dependencies
       run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip
-        pip install --upgrade pip
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip
+          pip install --upgrade pip
 
     - name: Install Buildozer
       run: |
-        pip install cython==0.29.36 buildozer==0.4.6  # Check for the latest stable version
-
-    - name: Prepare Android Directories
-      run: |
-        mkdir -p $HOME/android/bin
-        mkdir -p $HOME/android/platforms
-        mkdir -p $HOME/android/build
-        mkdir -p $HOME/android/venv
+          pip install cython==0.29.36 buildozer
 
     - name: Set up Python Environment
       run: |
-        python3 -m venv $HOME/android/venv
-        source $HOME/android/venv/bin/activate
-        pip install --upgrade pip
-        pip install cython==0.29.36 buildozer==0.4.6  # Ensure consistency
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install cython==0.29.36 buildozer
 
     - name: Build APK
       run: |
-        source $HOME/android/venv/bin/activate
-        cd <your_project_directory>  # Replace with your actual project directory
-        buildozer -v android debug
+          source venv/bin/activate
+          cd .
+          buildozer -v android debug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v2
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
       with:
-        name: my-app-debug
-        path: <your_project_directory>/bin/*.apk  # Adjust according to your output path
+        name: safespot-apk
+        path: bin/*.apk
