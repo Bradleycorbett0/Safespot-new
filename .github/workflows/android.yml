@@ -38,7 +38,7 @@ jobs:
         source $HOME/android/venv/bin/activate
         cd $GITHUB_WORKSPACE  # Navigate to the project directory
         buildozer -v android debug
-
+        
     - name: Upload APK
       uses: actions/upload-artifact@v2
       with:
