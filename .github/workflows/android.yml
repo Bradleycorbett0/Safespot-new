@@ -10,62 +10,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-    # ----------------------------
-    # 1) CHECKOUT REPO
-    # ----------------------------
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
-    # ----------------------------
-    # 2) INSTALL SYSTEM DEPENDENCIES
-    # Ubuntu 24 removed libncurses5 -> use ncurses6 + tinfo6
-    # ----------------------------
     - name: Install System Dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip libncurses6 libtinfo6
+        sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip python3-venv
         pip install --upgrade pip
 
-    # ----------------------------
-    # 3) INSTALL BUILDOZER + CYTHON
-    # ----------------------------
-    - name: Install Buildozer
+    - name: Prepare Android Directories
       run: |
-        pip install cython==0.29.36 buildozer==1.5.0
+        mkdir -p $HOME/android/bin
+        mkdir -p $HOME/android/platforms
+        mkdir -p $HOME/android/build
+        mkdir -p $HOME/android/venv
 
-    # ----------------------------
-    # 4) INSTALL ANDROID SDK + NDK
-    # ----------------------------
-    - name: Install Android SDK components
+    - name: Set up Python Environment and Install Buildozer
       run: |
-        sudo apt install -y wget
-        mkdir -p $HOME/android/sdk
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
-        unzip cmdtools.zip -d $HOME/android/sdk/
-        mv $HOME/android/sdk/cmdline-tools $HOME/android/sdk/latest
-        yes | $HOME/android/sdk/latest/bin/sdkmanager --sdk_root=$HOME/android/sdk \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.2" \
-            "ndk;25.2.9519653"
+        python3 -m venv $HOME/android/venv
+        source $HOME/android/venv/bin/activate
+        pip install --upgrade pip
+        pip install cython==0.29.36 buildozer==0.4.6  # Install in virtual environment
 
-        echo "ANDROIDSDK=$HOME/android/sdk" >> $GITHUB_ENV
-        echo "ANDROIDNDK=$HOME/android/sdk/ndk/25.2.9519653" >> $GITHUB_ENV
-        echo "$HOME/android/sdk/platform-tools" >> $GITHUB_PATH
-
-    # ----------------------------
-    # 5) BUILD APK WITH BUILDOZER
-    # ----------------------------
-    - name: Build APK with Buildozer
+    - name: Build APK
       run: |
-        buildozer android debug
+        source $HOME/android/venv/bin/activate
+        cd $GITHUB_WORKSPACE  # Navigate to the project directory
+        buildozer -v android debug
 
-    # ----------------------------
-    # 6) UPLOAD APK ARTIFACT
-    # ----------------------------
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v2
       with:
-        name: SafeSpot-APK
-        path: bin/*.apk
+        name: my-app-debug
+        path: $GITHUB_WORKSPACE/bin/*.apk  # Adjust according to your output path
