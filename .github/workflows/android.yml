@@ -27,24 +27,28 @@ jobs:
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
-        pip install setuptools==68.2.2  # provides distutils for Python 3.12
+        pip install setuptools==68.2.2
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
       run: |
         source $HOME/venv/bin/activate
 
-        # Use the Android SDK already present on GitHub runners
+        # Kill wrong inherited env paths
+        unset ANDROIDSDK
+        unset ANDROID_HOME
+        unset ANDROID_SDK_ROOT
+
+        # Correct SDK for GitHub runner
         export ANDROIDSDK=/usr/local/lib/android/sdk
+        export ANDROID_HOME=/usr/local/lib/android/sdk
+        export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
         export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
         export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
 
-        echo "Using SDK: $ANDROIDSDK"
-        echo "Using NDK: $ANDROIDNDK"
-
         buildozer android debug
 
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: safespot-apk
