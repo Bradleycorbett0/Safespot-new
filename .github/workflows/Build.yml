@@ -32,7 +32,7 @@ jobs:
         unzip tools.zip
         rm tools.zip
 
-        # Rename the extracted SDK directory to 'latest' so sdkmanager works correctly
+        # Rename extracted folder to 'latest' for sdkmanager compatibility
         mv cmdline-tools latest
 
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
@@ -46,6 +46,7 @@ jobs:
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
+        pip install setuptools==68.2.2  # Required for distutils support
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
