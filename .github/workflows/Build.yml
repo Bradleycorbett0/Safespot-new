@@ -27,24 +27,32 @@ jobs:
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
-        pip install setuptools==68.2.2
+        pip install setuptools==68.2.2  # adds distutils for Python 3.12 compatibility
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
       run: |
         source $HOME/venv/bin/activate
 
-        # Kill wrong inherited env paths
+        # Remove inherited broken Android environment variables
         unset ANDROIDSDK
         unset ANDROID_HOME
         unset ANDROID_SDK_ROOT
 
-        # Correct SDK for GitHub runner
+        # Use GitHub runner's preinstalled Android SDK
         export ANDROIDSDK=/usr/local/lib/android/sdk
         export ANDROID_HOME=/usr/local/lib/android/sdk
         export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+
+        # Use correct NDK version compatible with Buildozer
         export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
+
+        # Ensure Java 17 is used
         export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+
+        echo "USING SDK: $ANDROIDSDK"
+        echo "USING NDK: $ANDROIDNDK"
+        echo "JAVA: $JAVA_HOME"
 
         buildozer android debug
 
