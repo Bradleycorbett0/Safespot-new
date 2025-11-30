@@ -22,41 +22,29 @@ jobs:
           automake autoconf libtool pkg-config
         pip install --upgrade pip
 
-    - name: Install Android SDK + Build Tools + NDK
-      run: |
-        export ANDROID_SDK_ROOT=$HOME/android/sdk
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT/cmdline-tools
-
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
-        unzip tools.zip
-        rm tools.zip
-
-        # Rename extracted folder to 'latest' for sdkmanager compatibility
-        mv cmdline-tools latest
-
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.2" \
-          "ndk;23.1.7779620"
-
-    - name: Install Buildozer
+    - name: Set up Python & Install Buildozer
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
-        pip install setuptools==68.2.2  # Required for distutils support
+        pip install setuptools==68.2.2  # provides distutils for Python 3.12
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
       run: |
         source $HOME/venv/bin/activate
-        export ANDROIDSDK=$HOME/android/sdk
-        export ANDROIDNDK=$HOME/android/sdk/ndk/23.1.7779620
+
+        # Use the Android SDK already present on GitHub runners
+        export ANDROIDSDK=/usr/local/lib/android/sdk
+        export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
+        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+
+        echo "Using SDK: $ANDROIDSDK"
+        echo "Using NDK: $ANDROIDNDK"
+
         buildozer android debug
 
-    - name: Upload APK
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: safespot-apk
