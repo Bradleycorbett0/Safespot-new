@@ -12,7 +12,7 @@ jobs:
     steps:
     # Step 1: Checkout your repository's code
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Step 2: Install required system dependencies
     - name: Install System Dependencies
@@ -38,7 +38,7 @@ jobs:
 
     # Step 5: Upload the APK as an artifact
     - name: Upload APK
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: my-app-debug
         path: $GITHUB_WORKSPACE/bin/*.apk
