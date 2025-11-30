@@ -41,12 +41,12 @@ jobs:
           "build-tools;33.0.2" \
           "ndk;23.1.7779620"
 
-    - name: Install Buildozer
+    - name: Set up Python Environment and Install Buildozer
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
-        pip install setuptools==68.2.2  # Required for distutils support
+        pip install setuptools==68.2.2  # needed for distutils with Python 3.12
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
