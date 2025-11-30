@@ -1,56 +1,78 @@
-[app]
+name: Build APK
 
-# App details
-title = SafeSpot
-package.name = safespot
-package.domain = com.bradleycorbettjones.safespot
-version = 1.0
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
-# Source files
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-# App requirements
-# android + openssl are required for Kivy apps on Android
-requirements = python3,kivy,android,openssl
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-# Orientation
-orientation = portrait
-fullscreen = 0
+    - name: Install System Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          git zip unzip openjdk-17-jdk python3 python3-pip python3-venv \
+          libncurses6 libstdc++6 zlib1g-dev libffi-dev libssl-dev liblzma-dev
+        pip install --upgrade pip
 
-# Permissions
-android.permissions = INTERNET
+    - name: Create Python Virtual Env + Install Buildozer
+      run: |
+        python3 -m venv $HOME/venv
+        source $HOME/venv/bin/activate
+        pip install cython==0.29.36 buildozer==1.5.0
 
-# Android build config
-android.api = 33
-android.minapi = 21
-android.build_tools_version = 33.0.2
+    - name: Configure Android SDK Paths
+      run: |
+        echo "ANDROIDSDK=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+        echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+        echo "ANDROIDNDK=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
+        echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
+        echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
+        echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+        echo "P4A_SKIP_NDK_INSTALL=1" >> $GITHUB_ENV
 
-# CPU architectures
-android.archs = armeabi-v7a, arm64-v8a
+    - name: Build APK
+      run: |
+        source $HOME/venv/bin/activate
 
-#
-# ---- ANDROID PATH CONFIGURATION (DO NOT CHANGE) ----
-# These MUST be absolute paths and MUST match the GitHub workflow
-#
+        # Remove conflicting Android variables
+        unset ANDROIDSDK
+        unset ANDROID_HOME
+        unset ANDROID_SDK_ROOT
+        unset ANDROID_NDK_HOME
+        unset ANDROID_NDK
+        unset ANDROIDNDK_HOME
 
-android.sdk_path = /usr/local/lib/android/sdk
-android.ndk_path = /usr/local/lib/android/sdk/ndk/23.1.7779620
-android.ndk = 23.1.7779620
+        # Re-export correct Android values
+        export ANDROIDSDK=/usr/local/lib/android/sdk
+        export ANDROID_HOME=/usr/local/lib/android/sdk
+        export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+        export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
+        export ANDROID_NDK_HOME=$ANDROIDNDK
+        export ANDROID_NDK=$ANDROIDNDK
+        export ANDROIDNDK_HOME=$ANDROIDNDK
+        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+        export P4A_SKIP_NDK_INSTALL=1
+        export P4A_RELEASE_BUILD=1
 
-# Prevent Buildozer / p4a from downloading SDK components
-android.accept_sdk_license = True
-android.skip_update = True
+        echo "Using SDK: $ANDROIDSDK"
+        echo "Using NDK: $ANDROIDNDK"
+        echo "Using JAVA: $JAVA_HOME"
 
-# Gradle & artifacts
-android.gradle_version = 7.5
-android.allow_backup = True
+        # 🔥 CRITICAL — pin python-for-android to NDK 23 compatible version
+        sed -i 's|git clone -b master|git clone -b v2023.10.16|' $(which buildozer)
 
-# Debug produces an apk, release produces an aab for Play Store
-android.debug_artifact = apk
-android.release_artifact = aab
+        buildozer android debug
 
-
-[buildozer]
-log_level = 2
-warn_on_root = 1
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: safespot-apk
+        path: bin/*.apk
