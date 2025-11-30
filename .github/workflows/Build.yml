@@ -22,38 +22,30 @@ jobs:
           automake autoconf libtool pkg-config
         pip install --upgrade pip
 
-    - name: Install Android SDK + Build Tools + NDK
-      run: |
-        export ANDROID_SDK_ROOT=$HOME/android/sdk
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT/cmdline-tools
-
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
-        unzip tools.zip
-        rm tools.zip
-
-        # Rename extracted folder to 'latest' for sdkmanager compatibility
-        mv cmdline-tools latest
-
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.2" \
-          "ndk;23.1.7779620"
+    # We no longer install a second Android SDK.
+    # GitHub runner already provides a full SDK at /usr/local/lib/android/sdk
 
     - name: Set up Python Environment and Install Buildozer
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
-        pip install setuptools==68.2.2  # needed for distutils with Python 3.12
+        pip install setuptools==68.2.2  # includes distutils for Python 3.12
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
       run: |
         source $HOME/venv/bin/activate
-        export ANDROIDSDK=$HOME/android/sdk
-        export ANDROIDNDK=$HOME/android/sdk/ndk/23.1.7779620
+
+        # Use the Android SDK that already exists on the GitHub runner
+        export ANDROIDSDK=/usr/local/lib/android/sdk
+
+        # Use the NDK version we need
+        export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
+
+        # Ensure Java is detected
+        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+
         buildozer android debug
 
     - name: Upload APK
