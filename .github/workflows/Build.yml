@@ -27,32 +27,38 @@ jobs:
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install --upgrade pip
-        pip install setuptools==68.2.2  # restores distutils for Python 3.12
+        pip install setuptools==68.2.2  # fixes distutils on Python 3.12
         pip install cython==0.29.36 buildozer==1.5.0
 
     - name: Build APK
       run: |
         source $HOME/venv/bin/activate
 
-        # Remove conflicting SDK env vars from GitHub runner
+        # Clear inherited environment pollution
         unset ANDROIDSDK
         unset ANDROID_HOME
         unset ANDROID_SDK_ROOT
+        unset ANDROID_NDK_HOME
+        unset ANDROID_NDK
+        unset ANDROIDNDK_HOME
 
-        # Use GitHub runner's preinstalled Android SDK
+        # Use GitHub runner’s built-in Android SDK
         export ANDROIDSDK=/usr/local/lib/android/sdk
         export ANDROID_HOME=/usr/local/lib/android/sdk
         export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
 
-        # Use correct NDK version required by python-for-android
+        # Correct NDK path for python-for-android compatibility
         export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
+        export ANDROID_NDK_HOME=$ANDROIDNDK
+        export ANDROID_NDK=$ANDROIDNDK
+        export ANDROIDNDK_HOME=$ANDROIDNDK
 
-        # Ensure Java 17 JDK for Gradle
-        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-
-        # 🛑 CRITICAL — do NOT allow NDK redownload
+        # Prevent python-for-android from downloading another NDK
         export P4A_SKIP_NDK_INSTALL=1
         export P4A_RELEASE_BUILD=1
+
+        # Java for Gradle
+        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
 
         echo "Using SDK:  $ANDROIDSDK"
         echo "Using NDK:  $ANDROIDNDK"
