@@ -8,7 +8,7 @@ version = 1.0
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
-requirements = python3,kivy
+requirements = python3,kivy,android,openssl
 
 orientation = portrait
 fullscreen = 0
@@ -21,9 +21,10 @@ android.build_tools_version = 33.0.2
 
 android.archs = armeabi-v7a, arm64-v8a
 
-android.sdk_path = $ANDROIDSDK
-android.ndk_path = $ANDROIDNDK
-android.ndk = 25b
+# Correct fixed paths — DO NOT USE $ANDROIDSDK
+android.sdk_path = /usr/local/lib/android/sdk
+android.ndk_path = /usr/local/lib/android/sdk/ndk/23.1.7779620
+android.ndk = 23.1.7779620
 
 android.gradle_version = 7.5
 android.allow_backup = True
