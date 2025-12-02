@@ -45,13 +45,11 @@ jobs:
       run: |
         source $HOME/venv/bin/activate
 
-        # Remove conflicting GitHub/Runner Android variables
         unset ANDROID_HOME
         unset ANDROID_SDK_ROOT
         unset ANDROID_NDK_HOME
         unset ANDROID_NDK
 
-        # Re-export correct values
         export ANDROIDSDK=/usr/local/lib/android/sdk
         export ANDROID_HOME=/usr/local/lib/android/sdk
         export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -64,8 +62,8 @@ jobs:
         echo "Using NDK: $ANDROIDNDK"
         echo "Using JAVA: $JAVA_HOME"
 
-        # 🔥 pin python-for-android to avoid NDK 25 downloads
-        pip install python-for-android==2023.10.16 --force-reinstall
+        # Install stable python-for-android directly from GitHub
+        pip install https://github.com/kivy/python-for-android/archive/refs/tags/2023.10.16.zip --force-reinstall
 
         buildozer android debug
 
