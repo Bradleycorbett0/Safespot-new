@@ -8,7 +8,7 @@ version = 1.0
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
-requirements = python3,kivy,android,openssl
+requirements = python3,kivy,openssl,android
 
 orientation = portrait
 fullscreen = 0
@@ -33,6 +33,11 @@ android.allow_backup = True
 
 android.debug_artifact = apk
 android.release_artifact = aab
+
+# 🔥 THESE TWO LINES ARE THE FIX
+p4a.local_recipes = .
+p4a.no_download = True
+
 
 [buildozer]
 log_level = 2
