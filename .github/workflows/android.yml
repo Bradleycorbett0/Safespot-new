@@ -19,7 +19,6 @@ jobs:
         sudo apt install -y \
           git zip unzip openjdk-17-jdk python3 python3-pip python3-venv \
           libncurses6 libstdc++6 zlib1g-dev libffi-dev libssl-dev liblzma-dev
-
         pip install --upgrade pip
 
     - name: Create Python Virtual Env + Install Buildozer
@@ -28,9 +27,8 @@ jobs:
         source $HOME/venv/bin/activate
         pip install cython==0.29.36 buildozer==1.5.0
 
-    - name: Install Apache Ant   # 💥 THIS FIXES YOUR ERROR
-      run: |
-        sudo apt-get install -y ant
+    - name: Install Apache Ant
+      run: sudo apt-get install -y ant
 
     - name: Configure Android SDK Paths
       run: |
@@ -67,7 +65,9 @@ jobs:
         echo "Using NDK: $ANDROIDNDK"
         echo "Using JAVA: $JAVA_HOME"
 
-        pip install https://github.com/kivy/python-for-android/archive/refs/tags/2023.10.16.zip --force-reinstall
+        # FINAL WORKING VERSION
+        pip install https://github.com/kivy/python-for-android/archive/refs/tags/2024.1.21.zip --force-reinstall
+
         buildozer android debug
 
     - name: Upload APK Artifact
