@@ -7,36 +7,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+    - name: Setup Python
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.12'
+        python-version: "3.12"
 
-    - name: Create virtual environment
+    - name: Create venv & install buildozer
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
-        pip install --upgrade pip setuptools wheel cython buildozer python-for-android==2024.1.21
+        pip install --upgrade pip setuptools wheel cython
+        pip install buildozer python-for-android==2024.1.21
 
     - name: Install Android SDK
       run: |
-        sudo mkdir -p /usr/local/lib/android/sdk
+        mkdir -p /usr/local/lib/android/sdk
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
         unzip commandlinetools-linux-9477386_latest.zip -d /usr/local/lib/android/sdk/
         yes | /usr/local/lib/android/sdk/cmdline-tools/bin/sdkmanager --licenses
-        /usr/local/lib/android/sdk/cmdline-tools/bin/sdkmanager "platforms;android-33" "platform-tools" "build-tools;33.0.2"
+        /usr/local/lib/android/sdk/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-    - name: Install NDK 25b
+    - name: Install NDK 25b (required)
       run: |
         mkdir -p /usr/local/lib/android/sdk/ndk
         wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
         unzip ndk.zip -d /usr/local/lib/android/sdk/ndk/
         mv /usr/local/lib/android/sdk/ndk/android-ndk-r25b /usr/local/lib/android/sdk/ndk/25.0.8775105
 
-    - name: Debug build
+    - name: Build Debug APK
       run: |
         source $HOME/venv/bin/activate
         buildozer android debug
@@ -44,5 +45,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: safespot-apk
+        name: safespot-debug-apk
         path: bin/*.apk
