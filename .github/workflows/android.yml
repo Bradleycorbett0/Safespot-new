@@ -1,4 +1,4 @@
-name: Android Build
+name: Build APK
 
 on:
   workflow_dispatch:
@@ -13,25 +13,22 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Install Dependencies
+    - name: Install System Dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk \
-          python3 python3-pip python3-venv \
+        sudo apt install -y git zip unzip openjdk-17-jdk python3 python3-pip python3-venv \
           libffi-dev libssl-dev liblzma-dev zlib1g-dev ant
         pip install --upgrade pip
 
-    - name: Create Virtualenv and Install Buildozer
+    - name: Python Env + Buildozer + p4a
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install cython==0.29.36 buildozer==1.5.0 python-for-android==2024.1.21
 
-    - name: Configure Android Environment
+    - name: Configure Android Paths
       run: |
         echo "ANDROIDSDK=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
         echo "ANDROIDNDK=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
         echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
         echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
@@ -39,21 +36,21 @@ jobs:
 
     - name: Build APK
       env:
-        P4A_SKIP_NDK_INSTALL: 1
-        P4A_NO_DOWNLOAD_NDK: 1
-        P4A_NO_REFRESH_BUILD: 1
-        P4A_NO_DOWNLOAD_SDK: 1
+        P4A_SKIP_NDK_INSTALL: "1"
+        P4A_NO_DOWNLOAD_NDK: "1"
+        P4A_NO_DOWNLOAD_SDK: "1"
+        P4A_NO_REFRESH_BUILD: "1"
       run: |
         source $HOME/venv/bin/activate
         export PATH=$ANDROIDSDK/platform-tools:$PATH
 
-        echo "SDK: $ANDROIDSDK"
-        echo "NDK: $ANDROIDNDK"
-        echo "JAVA: $JAVA_HOME"
+        echo "Using SDK:  $ANDROIDSDK"
+        echo "Using NDK:  $ANDROIDNDK"
+        echo "Using JAVA: $JAVA_HOME"
 
         buildozer android debug
 
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: safespot-apk
