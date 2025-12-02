@@ -1,4 +1,4 @@
-name: Build APK
+name: Android Build
 
 on:
   workflow_dispatch:
@@ -18,19 +18,16 @@ jobs:
         sudo apt update
         sudo apt install -y \
           git zip unzip openjdk-17-jdk python3 python3-pip python3-venv \
-          libncurses6 libstdc++6 zlib1g-dev libffi-dev libssl-dev liblzma-dev
+          libncurses6 libstdc++6 zlib1g-dev libffi-dev libssl-dev liblzma-dev ant
         pip install --upgrade pip
 
-    - name: Create Python Virtual Env + Install Buildozer
+    - name: Create Python Virtual Environment + Install Buildozer
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
         pip install cython==0.29.36 buildozer==1.5.0
 
-    - name: Install Apache Ant
-      run: sudo apt-get install -y ant
-
-    - name: Configure Android SDK Paths
+    - name: Configure Android SDK and NDK
       run: |
         echo "ANDROIDSDK=/usr/local/lib/android/sdk" >> $GITHUB_ENV
         echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
@@ -48,11 +45,13 @@ jobs:
       run: |
         source $HOME/venv/bin/activate
 
+        # GitHub runner exports conflicting vars — remove them
         unset ANDROID_HOME
         unset ANDROID_SDK_ROOT
         unset ANDROID_NDK_HOME
         unset ANDROID_NDK
 
+        # Correct values
         export ANDROIDSDK=/usr/local/lib/android/sdk
         export ANDROID_HOME=/usr/local/lib/android/sdk
         export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -65,9 +64,10 @@ jobs:
         echo "Using NDK: $ANDROIDNDK"
         echo "Using JAVA: $JAVA_HOME"
 
-        # FINAL WORKING VERSION
-        pip install https://github.com/kivy/python-for-android/archive/refs/tags/2024.1.21.zip --force-reinstall
+        # Install stable Python-for-Android
+        pip install python-for-android==2024.1.21 --force-reinstall
 
+        # Build APK
         buildozer android debug
 
     - name: Upload APK Artifact
