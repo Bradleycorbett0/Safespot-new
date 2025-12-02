@@ -13,21 +13,21 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Install System Dependencies
+    - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y \
-          git zip unzip openjdk-17-jdk python3 python3-pip python3-venv \
-          libncurses6 libstdc++6 zlib1g-dev libffi-dev libssl-dev liblzma-dev ant
+        sudo apt install -y git zip unzip openjdk-17-jdk \
+          python3 python3-pip python3-venv \
+          libffi-dev libssl-dev liblzma-dev zlib1g-dev ant
         pip install --upgrade pip
 
-    - name: Create Python Virtual Environment + Install Buildozer
+    - name: Create Virtualenv and Install Buildozer
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
-        pip install cython==0.29.36 buildozer==1.5.0
+        pip install cython==0.29.36 buildozer==1.5.0 python-for-android==2024.1.21
 
-    - name: Configure Android SDK and NDK
+    - name: Configure Android Environment
       run: |
         echo "ANDROIDSDK=/usr/local/lib/android/sdk" >> $GITHUB_ENV
         echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
@@ -42,32 +42,15 @@ jobs:
         P4A_SKIP_NDK_INSTALL: 1
         P4A_NO_DOWNLOAD_NDK: 1
         P4A_NO_REFRESH_BUILD: 1
+        P4A_NO_DOWNLOAD_SDK: 1
       run: |
         source $HOME/venv/bin/activate
+        export PATH=$ANDROIDSDK/platform-tools:$PATH
 
-        # GitHub runner exports conflicting vars — remove them
-        unset ANDROID_HOME
-        unset ANDROID_SDK_ROOT
-        unset ANDROID_NDK_HOME
-        unset ANDROID_NDK
+        echo "SDK: $ANDROIDSDK"
+        echo "NDK: $ANDROIDNDK"
+        echo "JAVA: $JAVA_HOME"
 
-        # Correct values
-        export ANDROIDSDK=/usr/local/lib/android/sdk
-        export ANDROID_HOME=/usr/local/lib/android/sdk
-        export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
-        export ANDROIDNDK=/usr/local/lib/android/sdk/ndk/23.1.7779620
-        export ANDROID_NDK_HOME=$ANDROIDNDK
-        export ANDROID_NDK=$ANDROIDNDK
-        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-
-        echo "Using SDK: $ANDROIDSDK"
-        echo "Using NDK: $ANDROIDNDK"
-        echo "Using JAVA: $JAVA_HOME"
-
-        # Install stable Python-for-Android
-        pip install python-for-android==2024.1.21 --force-reinstall
-
-        # Build APK
         buildozer android debug
 
     - name: Upload APK Artifact
