@@ -1,45 +1,38 @@
 [app]
-
 title = SafeSpot
 package.name = safespot
 package.domain = com.bradleycorbettjones.safespot
 version = 1.0
 
-# Source files
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
-# Requirements
-requirements = python3,kivy,openssl,android
+requirements = python3, kivy, android, openssl
 
 orientation = portrait
 fullscreen = 0
-
-# Permissions
 android.permissions = INTERNET
 
-# Android configuration
 android.api = 33
 android.minapi = 21
 android.build_tools_version = 33.0.2
 
-# Architectures
-android.archs = armeabi-v7a, arm64-v8a
+android.archs = arm64-v8a, armeabi-v7a
 
-# Paths for GitHub runner
+# --- ABSOLUTE PATHS MUST MATCH GITHUB ACTION ---
 android.sdk_path = /usr/local/lib/android/sdk
-android.ndk_path = /usr/local/lib/android/sdk/ndk/25.0.8775105
-android.ndk = 25.0.8775105
+android.ndk_path = /usr/local/lib/android/sdk/ndk/23.1.7779620
+android.ndk = 23.1.7779620
 
-# No SDK downloads
+# ---- FORCE BUILDOZER TO NOT DOWNLOAD ANYTHING ----
 android.accept_sdk_license = True
 android.skip_update = True
-
-# Gradle
-android.gradle_version = 7.5
+p4a.local_ndk = True
+p4a.local_sdk = True
+android.skip_ndk_reinstall = True
 android.allow_backup = True
 
-# Artifacts
+android.gradle_version = 7.5
 android.debug_artifact = apk
 android.release_artifact = aab
 
