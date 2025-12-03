@@ -7,35 +7,31 @@ version = 1.0
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
-requirements = python3, kivy, android, openssl
+requirements = python3,kivy,android,openssl
 
 orientation = portrait
 fullscreen = 0
-android.permissions = INTERNET
 
+android.permissions = INTERNET
 android.api = 33
 android.minapi = 21
 android.build_tools_version = 33.0.2
 
-android.archs = arm64-v8a, armeabi-v7a
-
-# --- ABSOLUTE PATHS MUST MATCH GITHUB ACTION ---
 android.sdk_path = /usr/local/lib/android/sdk
 android.ndk_path = /usr/local/lib/android/sdk/ndk/23.1.7779620
 android.ndk = 23.1.7779620
 
-# ---- FORCE BUILDOZER TO NOT DOWNLOAD ANYTHING ----
-android.accept_sdk_license = True
-android.skip_update = True
-p4a.local_ndk = True
-p4a.local_sdk = True
-android.skip_ndk_reinstall = True
+android.archs = armeabi-v7a, arm64-v8a
+android.gradle_version = 7.5
 android.allow_backup = True
 
-android.gradle_version = 7.5
 android.debug_artifact = apk
 android.release_artifact = aab
 
 [buildozer]
 log_level = 2
 warn_on_root = 1
+
+p4a.sdk_dir = /usr/local/lib/android/sdk
+p4a.ndk_dir = /usr/local/lib/android/sdk/ndk/23.1.7779620
+p4a.dir = /home/runner/.buildozer/android/platform/python-for-android
