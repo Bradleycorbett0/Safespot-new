@@ -1,11 +1,16 @@
-name: Android Build
+name: Android Debug Build
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "**/*.py"
+      - "buildozer.spec"
+      - ".github/workflows/android.yml"
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout
@@ -14,49 +19,38 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y \
-          python3-pip python3-setuptools python3-dev git zip unzip \
-          openjdk-17-jdk libffi-dev libssl-dev libz-dev libsqlite3-dev
+        sudo apt install -y python3-pip python3-setuptools python3-wheel unzip zip libffi-dev libssl-dev autoconf automake libtool pkg-config openjdk-17-jdk
 
-    - name: Setup venv and install Buildozer
+    - name: Setup Python venv
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
-        pip install --upgrade pip wheel
-        pip install cython==0.29.36 buildozer python-for-android==2024.1.21
+        pip install --upgrade pip Cython virtualenv buildozer python-for-android==2024.1.21
 
-    - name: Install Android SDK + tools
+    - name: Setup Android SDK & cmdline-tools
       run: |
-        mkdir -p /usr/local/lib/android/sdk
-        cd /usr/local/lib/android/sdk
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmd.zip
-        unzip cmd.zip -d cmdline-tools
-        mv cmdline-tools/cmdline-tools cmdline-tools/latest
-        rm cmd.zip
-
-    - name: Install Android packages
-      run: |
-        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-        /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.2" \
-          "ndk;23.1.7779620"
-
-    - name: Export Android paths
-      run: |
-        echo "ANDROIDSDK=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROIDNDK=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
-        echo "NDKHOME=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
+        mkdir -p /usr/local/lib/android
+        export ANDROID_HOME=/usr/local/lib/android/sdk
+        export ANDROID_SDK_ROOT=$ANDROID_HOME
+        mkdir -p $ANDROID_HOME/cmdline-tools/latest
+        cd $ANDROID_HOME/cmdline-tools/latest
+        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+        unzip -o commandlinetools-linux-9477386_latest.zip
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Build APK
+      working-directory: Safespot-new
+      env:
+        ANDROID_HOME: /usr/local/lib/android/sdk
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/23.1.7779620
       run: |
         source $HOME/venv/bin/activate
-        buildozer android debug
+        buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Safespot-APK
-        path: bin/*.apk
+        name: safespot-apk
+        path: Safespot-new/bin/*.apk
