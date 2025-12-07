@@ -1,73 +1,36 @@
-name: Android Build
+name: Manual APK Builder
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout Code
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install System Dependencies
+    - name: Install Buildozer & Dependencies
       run: |
         sudo apt update
-        sudo apt install -y \
-          git zip unzip openjdk-17-jdk python3 python3-pip python3-venv \
-          libncurses6 libstdc++6 zlib1g-dev libffi-dev libssl-dev liblzma-dev ant
-        pip install --upgrade pip
-
-    - name: Create Virtualenv & Install Buildozer
-      run: |
+        sudo apt install -y python3-pip zip unzip openjdk-17-jdk libffi-dev libssl-dev autoconf automake libtool pkg-config
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
-        pip install cython==0.29.36 buildozer==1.5.0
-
-    - name: Configure Android SDK & NDK paths
-      run: |
-        echo "ANDROIDSDK=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-        echo "ANDROIDNDK=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
-        echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
-        echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/23.1.7779620" >> $GITHUB_ENV
-        echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+        pip install --upgrade pip buildozer python-for-android==2024.1.21 Cython
 
     - name: Build APK
+      working-directory: Safespot-new
       env:
-        P4A_SKIP_NDK_INSTALL: 1
-        P4A_NO_DOWNLOAD_NDK: 1
-        P4A_NO_REFRESH_BUILD: 1
+        ANDROID_HOME: /usr/local/lib/android/sdk
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/23.1.7779620
       run: |
         source $HOME/venv/bin/activate
-
-        # Clean old env vars
-        unset ANDROID_HOME ANDROID_SDK_ROOT ANDROID_NDK_HOME ANDROID_NDK
-
-        # Set correct SDK / NDK / PATH
-        export ANDROIDSDK=/usr/local/lib/android/sdk
-        export ANDROID_HOME=$ANDROIDSDK
-        export ANDROID_SDK_ROOT=$ANDROIDSDK
-        export ANDROIDNDK=$ANDROIDSDK/ndk/23.1.7779620
-        export ANDROID_NDK_HOME=$ANDROIDNDK
-        export ANDROID_NDK=$ANDROIDNDK
-        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-
-        echo "SDK: $ANDROIDSDK"
-        echo "NDK: $ANDROIDNDK"
-        echo "JAVA: $JAVA_HOME"
-
-        # Install python-for-android from PyPI (reliable)
-        pip install python-for-android==2024.1.21 --force-reinstall
-
         buildozer android debug
 
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: safespot-apk
-        path: bin/*.apk
+        path: Safespot-new/bin/*.apk
