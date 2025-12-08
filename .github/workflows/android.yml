@@ -1,56 +1,40 @@
-name: Android Debug Build
+name: Build SafeSpot APK
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # allows manual trigger
   push:
-    paths:
-      - "**/*.py"
-      - "buildozer.spec"
-      - ".github/workflows/android.yml"
+    branches: [ "main" ]  # builds when you push to main
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-    - name: Install system dependencies
+    - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-pip python3-setuptools python3-wheel unzip zip libffi-dev libssl-dev autoconf automake libtool pkg-config openjdk-17-jdk
+        sudo apt install -y python3-pip openjdk-8-jdk unzip git \
+            liblzma-dev zlib1g-dev libssl-dev libffi-dev
+        pip install --upgrade pip cython
 
-    - name: Setup Python venv
+    - name: Install Buildozer
       run: |
-        python3 -m venv $HOME/venv
-        source $HOME/venv/bin/activate
-        pip install --upgrade pip Cython virtualenv buildozer python-for-android==2024.1.21
+        pip install buildozer
 
-    - name: Setup Android SDK & cmdline-tools
+    - name: Install Android SDK/NDK
       run: |
-        mkdir -p /usr/local/lib/android
-        export ANDROID_HOME=/usr/local/lib/android/sdk
-        export ANDROID_SDK_ROOT=$ANDROID_HOME
-        mkdir -p $ANDROID_HOME/cmdline-tools/latest
-        cd $ANDROID_HOME/cmdline-tools/latest
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip -o commandlinetools-linux-9477386_latest.zip
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        sudo apt install -y autoconf automake libtool pkg-config
+        buildozer android update
 
     - name: Build APK
-      working-directory: Safespot-new
-      env:
-        ANDROID_HOME: /usr/local/lib/android/sdk
-        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/23.1.7779620
       run: |
-        source $HOME/venv/bin/activate
-        buildozer -v android debug
+        buildozer android debug
 
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: safespot-apk
-        path: Safespot-new/bin/*.apk
+        name: SafeSpot-APK
+        path: bin/*.apk
