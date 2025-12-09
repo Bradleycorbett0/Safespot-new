@@ -1,9 +1,6 @@
 name: Build Android APK
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -11,47 +8,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libffi-dev \
-            libssl-dev \
-            zip \
-            unzip \
-            pkg-config \
-            openjdk-17-jdk \
-            libgl1-mesa-dev \
-            libgles2 \
-            libegl1 \
-            libglu1-mesa-dev
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk autoconf libtool pkg-config \
+          python3-pip python3-setuptools python3-wheel \
+          libffi-dev libssl-dev libjpeg-dev \
+          libgl1-mesa-dev libgles2-mesa-dev
 
-      - name: Create virtual environment
-        run: |
-          python3 -m venv $HOME/venv
-          source $HOME/venv/bin/activate
-          pip install --upgrade pip
+    - name: Install Buildozer
+      run: |
+        pip install --upgrade pip cython buildozer python-for-android==2024.1.21
 
-      - name: Install Buildozer and python-for-android
-        run: |
-          source $HOME/venv/bin/activate
-          pip install buildozer python-for-android==2024.1.21 cython
+    - name: Create Buildozer folder cache
+      run: mkdir -p $HOME/.buildozer
 
-      - name: Build APK
-        run: |
-          source $HOME/venv/bin/activate
-          buildozer android debug
+    - name: Build Debug APK
+      env:
+        BUILDOZER_ANDROID_ACCEPT_LICENSE: "True"
+      run: |
+        buildozer android debug
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: safespot-apk
-          path: bin/*.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: SafeSpot-APK
+        path: bin/*.apk
