@@ -1,56 +1,59 @@
-name: Android Debug Build
+name: Build Android APK
 
 on:
   workflow_dispatch:
   push:
-    paths:
-      - "**/*.py"
-      - "buildozer.spec"
-      - ".github/workflows/android.yml"
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
     - name: Install system dependencies
       run: |
-        sudo apt update
-        sudo apt install -y python3-pip python3-setuptools python3-wheel unzip zip libffi-dev libssl-dev autoconf automake libtool pkg-config openjdk-17-jdk
+        sudo apt-get update
+        sudo apt-get install -y libffi-dev libssl-dev zip unzip libegl1-mesa libgles2-mesa pkg-config openjdk-17-jdk
 
-    - name: Setup Python venv
+    - name: Set up virtual environment
       run: |
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
-        pip install --upgrade pip Cython virtualenv buildozer python-for-android==2024.1.21
+        pip install --upgrade pip setuptools wheel cython buildozer python-for-android==2024.1.21
 
-    - name: Setup Android SDK & cmdline-tools
+    - name: Install Android SDK & Build Tools
       run: |
-        mkdir -p /usr/local/lib/android
-        export ANDROID_HOME=/usr/local/lib/android/sdk
-        export ANDROID_SDK_ROOT=$ANDROID_HOME
-        mkdir -p $ANDROID_HOME/cmdline-tools/latest
-        cd $ANDROID_HOME/cmdline-tools/latest
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip -o commandlinetools-linux-9477386_latest.zip
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        mkdir -p $HOME/.android
+        yes | sdkmanager --licenses || true
+        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;23.1.7779620"
 
-    - name: Build APK
-      working-directory: Safespot-new
-      env:
-        ANDROID_HOME: /usr/local/lib/android/sdk
-        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/23.1.7779620
+    - name: Verify environment paths
+      run: |
+        echo "SDK: $ANDROID_SDK_ROOT"
+        echo "NDK: $ANDROID_NDK_HOME"
+        echo "JAVA: $(which java)"
+        java -version
+
+    - name: Build APK using Buildozer
       run: |
         source $HOME/venv/bin/activate
-        buildozer -v android debug
+        buildozer android debug
+      env:
+        ANDROIDSDK: $ANDROID_SDK_ROOT
+        ANDROIDNDK: $ANDROID_NDK_HOME
+        PATH: $PATH:$ANDROID_SDK_ROOT/platform-tools
 
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: safespot-apk
-        path: Safespot-new/bin/*.apk
+        name: SafeSpot-APK
+        path: bin/*.apk
