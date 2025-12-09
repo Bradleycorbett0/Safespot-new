@@ -1,59 +1,57 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libffi-dev libssl-dev zip unzip libegl1-mesa libgles2-mesa pkg-config openjdk-17-jdk
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libffi-dev \
+            libssl-dev \
+            zip \
+            unzip \
+            pkg-config \
+            openjdk-17-jdk \
+            libgl1-mesa-dev \
+            libgles2 \
+            libegl1 \
+            libglu1-mesa-dev
 
-    - name: Set up virtual environment
-      run: |
-        python3 -m venv $HOME/venv
-        source $HOME/venv/bin/activate
-        pip install --upgrade pip setuptools wheel cython buildozer python-for-android==2024.1.21
+      - name: Create virtual environment
+        run: |
+          python3 -m venv $HOME/venv
+          source $HOME/venv/bin/activate
+          pip install --upgrade pip
 
-    - name: Install Android SDK & Build Tools
-      run: |
-        mkdir -p $HOME/.android
-        yes | sdkmanager --licenses || true
-        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;23.1.7779620"
+      - name: Install Buildozer and python-for-android
+        run: |
+          source $HOME/venv/bin/activate
+          pip install buildozer python-for-android==2024.1.21 cython
 
-    - name: Verify environment paths
-      run: |
-        echo "SDK: $ANDROID_SDK_ROOT"
-        echo "NDK: $ANDROID_NDK_HOME"
-        echo "JAVA: $(which java)"
-        java -version
+      - name: Build APK
+        run: |
+          source $HOME/venv/bin/activate
+          buildozer android debug
 
-    - name: Build APK using Buildozer
-      run: |
-        source $HOME/venv/bin/activate
-        buildozer android debug
-      env:
-        ANDROIDSDK: $ANDROID_SDK_ROOT
-        ANDROIDNDK: $ANDROID_NDK_HOME
-        PATH: $PATH:$ANDROID_SDK_ROOT/platform-tools
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: SafeSpot-APK
-        path: bin/*.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: safespot-apk
+          path: bin/*.apk
