@@ -4,37 +4,35 @@ package.name = safespot
 package.domain = com.bradleycorbettjones.safespot
 version = 1.0
 
+# Your app source
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
+# Core requirements
 requirements = python3,kivy
+
+# App behaviour
 orientation = portrait
 fullscreen = 0
 
-# ---- ANDROID CONFIG ----
+# Android targets
 android.api = 33
 android.minapi = 21
 android.permissions = INTERNET
 android.archs = armeabi-v7a, arm64-v8a
 
-# Force correct build tools & NDK
-android.build_tools_version = 33.0.2
-android.ndk = 25b
-android.accept_sdk_license = True
-android.allow_downloads = True
+# DO NOT SPECIFY SDK/NDK PATHS OR VERSIONS
+# GitHub Actions installs the correct ones automatically
 
-# Do NOT hardcode paths (GitHub runner varies)
-# These lines were removed:
-# android.sdk_path =
-# android.ndk_path =
+# Optional icons (uncomment if you use them)
+# icon.filename = icon.png
+
+# If using a splashscreen (optional)
+# presplash.filename = presplash.png
 
 [buildozer]
 log_level = 2
 warn_on_root = 1
 
-# python-for-android integration
-p4a.branch = master
-# Remove path overrides so p4a installs correctly
-# p4a.sdk_dir =
-# p4a.ndk_dir =
-# p4a.dir =
+# Let python-for-android manage everything
+# DO NOT override 'p4a.ndk_dir', 'p4a.sdk_dir' or 'android.ndk'
