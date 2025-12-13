@@ -1,30 +1,33 @@
 [app]
 title = SafeSpot
 package.name = safespot
-package.domain = bradleycorbettjones
+package.domain = com.bradleycorbettjones
+
 version = 1.0
 
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py,kv,png,jpg,json,txt,atlas
 
-requirements = python3,kivy
+requirements = python3,kivy,requests
+
 orientation = portrait
 fullscreen = 0
 
-# Android configuration
+# ---------- ANDROID ----------
 android.api = 33
 android.minapi = 21
-android.archs = armeabi-v7a, arm64-v8a
+
+# IMPORTANT: use NDK 25b (stable with p4a)
+android.ndk = 25b
+
+android.archs = arm64-v8a,armeabi-v7a
+
 android.permissions = INTERNET
-android.build_tools_version = 33.0.2
 
-# Use SDL2 bootstrap (recommended)
-android.bootstrap = sdl2
+# Auto-accept licenses
+android.accept_sdk_license = True
 
-# Keep logs readable
-log_level = 2
-
-
+# ---------- BUILD ----------
 [buildozer]
-warn_on_root = 1
 log_level = 2
+warn_on_root = 1
