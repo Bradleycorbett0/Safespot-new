@@ -2,10 +2,13 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -16,7 +19,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install Buildozer dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -24,53 +27,30 @@ jobs:
             python3-setuptools \
             python3-wheel \
             zip unzip \
-            libncurses5 \
-            libstdc++6 \
+            openjdk-17-jdk \
             libffi-dev \
-            libssl-dev
+            libssl-dev \
+            libncurses6 \
+            libstdc++6
 
+      - name: Install Buildozer
+        run: |
           pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Prepare Android SDK for Buildozer
-        env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      - name: Accept Android licenses
         run: |
-          INTERNAL_SDK="/home/runner/.buildozer/android/platform/android-sdk"
+          mkdir -p ~/.android
+          echo "y" | sdkmanager --licenses || true
 
-          echo "Creating Buildozer internal SDK directory..."
-          mkdir -p "$INTERNAL_SDK"
-
-          echo "Copying cmdline-tools..."
-          mkdir -p "$INTERNAL_SDK/cmdline-tools"
-          cp -r "$ANDROID_SDK_ROOT/cmdline-tools/latest" "$INTERNAL_SDK/cmdline-tools/latest"
-
-          echo "Fixing permissions..."
-          chmod +x "$INTERNAL_SDK/cmdline-tools/latest/bin/"*
-
-          echo "Installing Android platform + build-tools..."
-          yes | "$INTERNAL_SDK/cmdline-tools/latest/bin/sdkmanager" \
-            --sdk_root="$INTERNAL_SDK" \
-            --channel=0 \
-            "platforms;android-33" \
-            "build-tools;33.0.2" \
-            "platform-tools"
-
-          echo "Accepting SDK licenses..."
-          yes | "$INTERNAL_SDK/cmdline-tools/latest/bin/sdkmanager" \
-            --licenses \
-            --sdk_root="$INTERNAL_SDK"
-
-      - name: Build APK
+      - name: Build APK with Buildozer
         env:
-          ANDROIDSDK: /home/runner/.buildozer/android/platform/android-sdk
-          ANDROIDNDK: /usr/local/lib/android/sdk/ndk/23.1.7779620
           BUILDOZER_ANDROID_ACCEPT_LICENSE: "True"
         run: |
-          buildozer android debug
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: safespot-apk
+          name: SafeSpot-APK
           path: bin/*.apk
