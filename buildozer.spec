@@ -1,106 +1,80 @@
 [app]
 
-# (str) Title of your application
+# =========================
+# Application Information
+# =========================
+
 title = SafeSpot
-
-# (str) Package name
 package.name = safespot
-
-# (str) Package domain (use your real domain or github user)
 package.domain = com.bradleycorbettjones
 
-# (str) Source code where the main.py lives
 source.dir = .
+source.include_exts = py,png,jpg,jpeg,kv,json,txt,ttf,otf
 
-# (str) The entry point of the application
-source.main = main.py
-
-# (str) Application versioning
 version = 0.1
 
-# (list) Application requirements
-requirements = python3,kivy,requests
+# =========================
+# Python & Kivy
+# =========================
 
-# (str) Supported orientation
-orientation = portrait
+requirements = python3,kivy
+entrypoint = main.py
 
-# (bool) Fullscreen mode
-fullscreen = 0
+# =========================
+# Android Configuration
+# =========================
 
-
-# -------------------------------
-# ANDROID CONFIGURATION
-# -------------------------------
-
-# (list) Android architectures
-android.archs = arm64-v8a, armeabi-v7a
-
-# (int) Target Android API
+# API levels
 android.api = 33
-
-# (int) Minimum Android API
 android.minapi = 21
 
-# (str) REQUIRED: python-for-android compatible NDK
+# NDK (p4a recommended)
 android.ndk = 25b
 
-# (str) Android SDK version (leave empty – Buildozer handles this)
-android.sdk =
+# SDK (do NOT set sdk_path)
+android.sdk = 33
 
-# (bool) Allow backup
+# Build tools (stable + supported)
+android.build_tools_version = 33.0.2
+
+# Accept licenses automatically
+android.accept_sdk_license = True
+
+# Architectures
+android.archs = arm64-v8a, armeabi-v7a
+
+# Bootstrap (required)
+p4a.bootstrap = sdl2
+
+# =========================
+# Permissions
+# =========================
+
+android.permissions = INTERNET
+
+# =========================
+# App Behavior
+# =========================
+
 android.allow_backup = True
+android.orientation = portrait
 
-# (bool) Use SDL2 bootstrap
-android.bootstrap = sdl2
+# =========================
+# Logging / Debug
+# =========================
 
-# (bool) Enable debug symbols (debug builds only)
-android.debug = True
+android.logcat_filters = *:S python:D
+android.debuggable = 1
 
+# =========================
+# Build Optimization
+# =========================
 
-# -------------------------------
-# PERMISSIONS
-# -------------------------------
+android.private_storage = True
+android.enable_androidx = True
 
-android.permissions = INTERNET, ACCESS_NETWORK_STATE
+# =========================
+# Exclusions
+# =========================
 
-
-# -------------------------------
-# PYTHON FOR ANDROID
-# -------------------------------
-
-# (str) Python version
-p4a.python_version = 3.10
-
-# (bool) Copy libraries into APK
-p4a.copy_libs = True
-
-# (bool) Ignore setup.py
-p4a.ignore_setup_py = True
-
-# (bool) Use colors in logs
-p4a.color = always
-
-
-# -------------------------------
-# BUILD OPTIONS
-# -------------------------------
-
-# (int) Log level (2 = very verbose, helpful for CI)
-log_level = 2
-
-# (bool) Clean build before compiling
-clean = False
-
-# (bool) Warning on deprecated APIs
-warn_on_root = False
-
-
-# -------------------------------
-# DO NOT SET THESE (IMPORTANT)
-# -------------------------------
-# android.sdk_path
-# android.ndk_path
-# p4a.sdk_dir
-# p4a.ndk_dir
-# p4a.build_dir
-# p4a.dist_dir
+exclude_exts = spec,pyc,pyo,swp,log
