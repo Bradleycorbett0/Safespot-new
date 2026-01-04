@@ -1,97 +1,107 @@
 name: Build Android APK (Buildozer)
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-24.04
 
+    # CRITICAL: pin env at job level so it applies to every step
     env:
-      ANDROID_SDK_ROOT: /home/runner/android-sdk
-      ANDROID_HOME: /home/runner/android-sdk
-      ANDROID_API: 33
-      ANDROID_MIN_API: 21
-      ANDROID_NDK_VERSION: 25.1.8937393
+      ANDROID_API: "33"
+      ANDROID_MIN_API: "21"
+
+      # Force Buildozer to accept licenses non-interactively
       BUILDOZER_ANDROID_ACCEPT_LICENSE: "True"
+      ACCEPT_EULA: "Y"
+
+      # IMPORTANT: point Android SDK root to Buildozer's SDK (not GitHub's)
+      ANDROIDSDK: /home/runner/.buildozer/android/platform/android-sdk
+      ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
+      ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
+
+      # IMPORTANT: point NDK to Buildozer's NDK r25b (not GitHub's preinstalled)
+      ANDROIDNDK: /home/runner/.buildozer/android/platform/android-ndk-r25b
+      ANDROID_NDK: /home/runner/.buildozer/android/platform/android-ndk-r25b
+      ANDROID_NDK_HOME: /home/runner/.buildozer/android/platform/android-ndk-r25b
+      ANDROID_NDK_ROOT: /home/runner/.buildozer/android/platform/android-ndk-r25b
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          zip unzip curl git \
-          build-essential \
-          openjdk-17-jdk \
-          libffi-dev libssl-dev \
-          liblzma-dev zlib1g-dev \
-          libsqlite3-dev \
-          libncurses-dev \
-          libreadline-dev \
-          libgdbm-dev \
-          libnss3-dev \
-          libasound2-dev \
-          libpulse-dev \
-          libx11-dev libxrandr-dev \
-          libxinerama-dev libxcursor-dev \
-          libxi-dev
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            zip unzip curl git \
+            openjdk-17-jdk \
+            build-essential \
+            libffi-dev libssl-dev \
+            zlib1g-dev \
+            libncurses5 \
+            libstdc++6 \
+            liblzma-dev \
+            pkg-config \
+            cmake \
+            autoconf automake libtool
 
-    - name: Install Python tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install buildozer cython virtualenv
+      - name: Install Buildozer + Cython
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "buildozer>=1.5.0" cython virtualenv
 
-    # -------------------------------
-    # ANDROID SDK (FIXED STRUCTURE)
-    # -------------------------------
-    - name: Install Android SDK
-      run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT/cmdline-tools
+      # IMPORTANT: ensure GitHub's injected NDK vars do not override ours inside the runner context
+      - name: Hard reset Android variables (override GitHub defaults)
+        run: |
+          echo "Before override:"
+          env | grep -E '^ANDROID_(NDK|SDK|HOME|S).*' || true
 
-        curl -L -o tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q tools.zip
+          # Remove GitHub hosted NDK pointers if present
+          unset ANDROID_NDK_LATEST_HOME || true
 
-        mkdir -p latest
-        mv cmdline-tools/* latest/
-        rm -rf cmdline-tools tools.zip
+          # Re-export what we want (job env already sets them, this reinforces it)
+          export ANDROIDSDK="/home/runner/.buildozer/android/platform/android-sdk"
+          export ANDROID_SDK_ROOT="$ANDROIDSDK"
+          export ANDROID_HOME="$ANDROIDSDK"
 
-        echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-        echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          export ANDROIDNDK="/home/runner/.buildozer/android/platform/android-ndk-r25b"
+          export ANDROID_NDK="$ANDROIDNDK"
+          export ANDROID_NDK_HOME="$ANDROIDNDK"
+          export ANDROID_NDK_ROOT="$ANDROIDNDK"
 
-    - name: Install Android SDK packages
-      run: |
-        sdkmanager --version
-        yes | sdkmanager --licenses
+          # Persist for subsequent steps explicitly
+          echo "ANDROIDSDK=$ANDROIDSDK" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
 
-        sdkmanager \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.2" \
-          "ndk;25.1.8937393"
+          echo "ANDROIDNDK=$ANDROIDNDK" >> $GITHUB_ENV
+          echo "ANDROID_NDK=$ANDROID_NDK" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
 
-    # -------------------------------
-    # BUILDOZER BUILD
-    # -------------------------------
-    - name: Build APK with Buildozer
-      run: |
-        buildozer android debug
+          echo "After override:"
+          env | grep -E '^ANDROID_(NDK|SDK|HOME|S).*' || true
 
-    # -------------------------------
-    # UPLOAD APK (v4 FIX)
-    # -------------------------------
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: SafeSpot-APK
-        path: bin/*.apk
+      - name: Build APK (debug)
+        run: |
+          # sanity check in the same step that runs buildozer
+          echo "NDK used for build should be r25b:"
+          echo "ANDROID_NDK=$ANDROID_NDK"
+          ls -la "$ANDROID_NDK" || true
+
+          buildozer -v android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: safespot-apk
+          path: bin/*.apk
