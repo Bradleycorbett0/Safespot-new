@@ -9,26 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
-    # CRITICAL: pin env at job level so it applies to every step
-    env:
-      ANDROID_API: "33"
-      ANDROID_MIN_API: "21"
-
-      # Force Buildozer to accept licenses non-interactively
-      BUILDOZER_ANDROID_ACCEPT_LICENSE: "True"
-      ACCEPT_EULA: "Y"
-
-      # IMPORTANT: point Android SDK root to Buildozer's SDK (not GitHub's)
-      ANDROIDSDK: /home/runner/.buildozer/android/platform/android-sdk
-      ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
-      ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
-
-      # IMPORTANT: point NDK to Buildozer's NDK r25b (not GitHub's preinstalled)
-      ANDROIDNDK: /home/runner/.buildozer/android/platform/android-ndk-r25b
-      ANDROID_NDK: /home/runner/.buildozer/android/platform/android-ndk-r25b
-      ANDROID_NDK_HOME: /home/runner/.buildozer/android/platform/android-ndk-r25b
-      ANDROID_NDK_ROOT: /home/runner/.buildozer/android/platform/android-ndk-r25b
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,61 +27,74 @@ jobs:
             build-essential \
             libffi-dev libssl-dev \
             zlib1g-dev \
-            libncurses5 \
+            libncurses6 libncursesw6 libtinfo6 \
             libstdc++6 \
             liblzma-dev \
             pkg-config \
             cmake \
             autoconf automake libtool
 
+          python -m pip install --upgrade pip setuptools wheel
+
       - name: Install Buildozer + Cython
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install "buildozer>=1.5.0" cython virtualenv
+          pip install --upgrade buildozer cython==0.29.36 virtualenv
 
-      # IMPORTANT: ensure GitHub's injected NDK vars do not override ours inside the runner context
-      - name: Hard reset Android variables (override GitHub defaults)
+      # --- Android SDK setup (stable + non-interactive) ---
+      - name: Install Android SDK Command Line Tools
+        env:
+          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
         run: |
-          echo "Before override:"
-          env | grep -E '^ANDROID_(NDK|SDK|HOME|S).*' || true
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
 
-          # Remove GitHub hosted NDK pointers if present
-          unset ANDROID_NDK_LATEST_HOME || true
+          # Download commandline-tools and place into cmdline-tools/latest
+          curl -L -o tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q tools.zip
+          rm tools.zip
 
-          # Re-export what we want (job env already sets them, this reinforces it)
-          export ANDROIDSDK="/home/runner/.buildozer/android/platform/android-sdk"
-          export ANDROID_SDK_ROOT="$ANDROIDSDK"
-          export ANDROID_HOME="$ANDROIDSDK"
+          # Google zip extracts to "cmdline-tools", we must rename it to "latest"
+          mv cmdline-tools latest
 
-          export ANDROIDNDK="/home/runner/.buildozer/android/platform/android-ndk-r25b"
-          export ANDROID_NDK="$ANDROIDNDK"
-          export ANDROID_NDK_HOME="$ANDROIDNDK"
-          export ANDROID_NDK_ROOT="$ANDROIDNDK"
+          # Put sdkmanager on PATH for subsequent steps
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
 
-          # Persist for subsequent steps explicitly
-          echo "ANDROIDSDK=$ANDROIDSDK" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-
-          echo "ANDROIDNDK=$ANDROIDNDK" >> $GITHUB_ENV
-          echo "ANDROID_NDK=$ANDROID_NDK" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >> $GITHUB_ENV
-          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
-
-          echo "After override:"
-          env | grep -E '^ANDROID_(NDK|SDK|HOME|S).*' || true
-
-      - name: Build APK (debug)
+      - name: Install Android SDK packages + accept licenses
+        env:
+          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
         run: |
-          # sanity check in the same step that runs buildozer
-          echo "NDK used for build should be r25b:"
-          echo "ANDROID_NDK=$ANDROID_NDK"
-          ls -la "$ANDROID_NDK" || true
+          # Accept licenses non-interactively
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
+
+          # Install required packages (AIDL comes with build-tools)
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2"
+
+          # Verify tools exist
+          echo "sdkmanager: $(which sdkmanager)"
+          echo "adb: $(which adb || true)"
+          ls -la "$ANDROID_SDK_ROOT/build-tools/33.0.2" || true
+          test -f "$ANDROID_SDK_ROOT/build-tools/33.0.2/aidl" || (echo "AIDL missing!" && exit 1)
+
+      - name: Build APK with Buildozer
+        env:
+          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+          # Buildozer respects this for license acceptance in some setups
+          BUILDOZER_ANDROID_ACCEPT_LICENSE: "True"
+          ACCEPT_EULA: "Y"
+        run: |
+          # Optional: clean only if you want a fresh rebuild each run
+          # buildozer android clean
 
           buildozer -v android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: safespot-apk
+          name: Safespot-APK
           path: bin/*.apk
