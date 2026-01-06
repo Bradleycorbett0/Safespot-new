@@ -1,100 +1,83 @@
-name: Build Android APK (Buildozer)
+[app]
+title = SafeSpot
+package.name = safespot
+package.domain = com.bradleycorbettjones
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+# Your main file (change if yours is not main.py)
+source.dir = .
+source.include_exts = py,png,jpg,jpeg,kv,atlas,json,txt,ttf,otf,wav,mp3
 
-jobs:
-  build:
-    runs-on: ubuntu-24.04
+# Kivy requirements (add more if your project uses them)
+requirements = python3,kivy,requests,urllib3,idna,certifi,charset-normalizer
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+# If you use any local modules in folders, list them here (optional)
+# include_exts = py,kv,png,jpg,json
+# include_patterns =
+# exclude_patterns = tests/*,*.pyc,*.pyo,__pycache__/*
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+# This is critical: show the real error
+log_level = 2
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            zip unzip curl git \
-            openjdk-17-jdk \
-            build-essential \
-            libffi-dev libssl-dev \
-            zlib1g-dev \
-            libncurses6 libncursesw6 libtinfo6 \
-            libstdc++6 \
-            liblzma-dev \
-            pkg-config \
-            cmake \
-            autoconf automake libtool
+# Optional but recommended
+fullscreen = 0
+orientation = portrait
 
-          python -m pip install --upgrade pip setuptools wheel
+# If you use a KV file as your root (optional)
+# kv_filename = safespot.kv
 
-      - name: Install Buildozer + Cython
-        run: |
-          pip install --upgrade buildozer cython==0.29.36 virtualenv
+# If you use an icon / presplash (optional)
+# icon.filename = assets/icon.png
+# presplash.filename = assets/presplash.png
 
-      # --- Android SDK setup (stable + non-interactive) ---
-      - name: Install Android SDK Command Line Tools
-        env:
-          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-        run: |
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          cd "$ANDROID_SDK_ROOT/cmdline-tools"
 
-          # Download commandline-tools and place into cmdline-tools/latest
-          curl -L -o tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q tools.zip
-          rm tools.zip
+[buildozer]
+warn_on_root = 1
 
-          # Google zip extracts to "cmdline-tools", we must rename it to "latest"
-          mv cmdline-tools latest
 
-          # Put sdkmanager on PATH for subsequent steps
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+[android]
+# Recommended bootstrap
+bootstrap = sdl2
 
-      - name: Install Android SDK packages + accept licenses
-        env:
-          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-        run: |
-          # Accept licenses non-interactively
-          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
+# Target / min API (matches what you were using)
+api = 33
+minapi = 21
 
-          # Install required packages (AIDL comes with build-tools)
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.2"
+# Architectures (keep both if you really need 32-bit)
+arch = arm64-v8a, armeabi-v7a
 
-          # Verify tools exist
-          echo "sdkmanager: $(which sdkmanager)"
-          echo "adb: $(which adb || true)"
-          ls -la "$ANDROID_SDK_ROOT/build-tools/33.0.2" || true
-          test -f "$ANDROID_SDK_ROOT/build-tools/33.0.2/aidl" || (echo "AIDL missing!" && exit 1)
+# IMPORTANT: force Buildozer to use the SDK you install in the workflow.
+# This stops it using /home/runner/.buildozer/android/platform/android-sdk
+sdk_path = android-sdk
 
-      - name: Build APK with Buildozer
-        env:
-          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          # Buildozer respects this for license acceptance in some setups
-          BUILDOZER_ANDROID_ACCEPT_LICENSE: "True"
-          ACCEPT_EULA: "Y"
-        run: |
-          # Optional: clean only if you want a fresh rebuild each run
-          # buildozer android clean
+# IMPORTANT: p4a recommends r25b; Buildozer can still download it if needed.
+# If you want to FORCE a specific NDK on runner, set an absolute path instead.
+# Example: ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653
+# For now, keep it consistent with Buildozer’s recommended version:
+ndk_version = 25b
 
-          buildozer -v android debug
+# Accept licenses (helps avoid interactive sdkmanager prompts)
+accept_sdk_license = True
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Safespot-APK
-          path: bin/*.apk
+# If you need permissions, add them explicitly (examples below)
+# permissions = INTERNET,ACCESS_NETWORK_STATE
+permissions = INTERNET
+
+# If your app needs GPS / maps, uncomment:
+# permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION
+
+# If you attach photos / camera, uncomment:
+# permissions = INTERNET,CAMERA,READ_MEDIA_IMAGES
+
+# If you read/write files (Android 13+ is different), be careful; prefer Storage Access Framework.
+# permissions = INTERNET,READ_MEDIA_IMAGES
+
+# If you use android.ndk_api explicitly
+ndk_api = 21
+
+# Reduce random build variance
+android.gradle_dependencies =
+android.enable_androidx = True
+
+# Useful when debugging native builds
+# p4a.debug = True
+# p4a.verbose = True
