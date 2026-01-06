@@ -1,80 +1,45 @@
 [app]
-
-# =========================
-# Application Information
-# =========================
-
 title = SafeSpot
 package.name = safespot
 package.domain = com.bradleycorbettjones
 
 source.dir = .
-source.include_exts = py,png,jpg,jpeg,kv,json,txt,ttf,otf
+source.include_exts = py,png,jpg,jpeg,kv,atlas,json,txt,ttf,otf,wav,mp3
 
-version = 0.1
+requirements = python3,kivy,requests,urllib3,idna,certifi,charset-normalizer
 
-# =========================
-# Python & Kivy
-# =========================
+orientation = portrait
+fullscreen = 0
 
-requirements = python3,kivy
-entrypoint = main.py
+# CRITICAL: show real errors
+log_level = 2
 
-# =========================
-# Android Configuration
-# =========================
+
+[buildozer]
+warn_on_root = 1
+
+
+[android]
+bootstrap = sdl2
 
 # API levels
-android.api = 33
-android.minapi = 21
-
-# NDK (p4a recommended)
-android.ndk = 25b
-
-# SDK (do NOT set sdk_path)
-android.sdk = 33
-
-# Build tools (stable + supported)
-android.build_tools_version = 33.0.2
-
-# Accept licenses automatically
-android.accept_sdk_license = True
+api = 33
+minapi = 21
+ndk_api = 21
 
 # Architectures
-android.archs = arm64-v8a, armeabi-v7a
+# NOTE: armeabi-v7a is increasingly fragile on Ubuntu 24 runners.
+# You can re-add it later once arm64 builds cleanly.
+arch = arm64-v8a
 
-# Bootstrap (required)
-p4a.bootstrap = sdl2
+# THIS IS THE FIX — correct keys
+android.sdk_path = android-sdk
 
-# =========================
-# Permissions
-# =========================
+# Let Buildozer use its supported NDK, but keep it consistent
+ndk_version = 25b
 
-android.permissions = INTERNET
+accept_sdk_license = True
 
-# =========================
-# App Behavior
-# =========================
+permissions = INTERNET
 
-android.allow_backup = True
-android.orientation = portrait
-
-# =========================
-# Logging / Debug
-# =========================
-
-android.logcat_filters = *:S python:D
-android.debuggable = 1
-
-# =========================
-# Build Optimization
-# =========================
-
-android.private_storage = True
 android.enable_androidx = True
-
-# =========================
-# Exclusions
-# =========================
-
-exclude_exts = spec,pyc,pyo,swp,log
