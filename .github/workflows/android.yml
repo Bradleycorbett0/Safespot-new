@@ -1,51 +1,73 @@
 name: Build Android APK (Buildozer)
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04   # IMPORTANT: 22.04 is stable for Buildozer
 
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 🔴 MUST be Python 3.10 (Buildozer compatible)
-    - name: Set up Python
+    - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: "3.10"
 
     - name: Install system dependencies
       run: |
-        sudo apt update
-        sudo apt install -y \
+        sudo apt-get update
+        sudo apt-get install -y \
+          zip unzip \
+          git \
           openjdk-17-jdk \
-          unzip zip \
-          autoconf automake libtool pkg-config \
-          build-essential \
-          libffi-dev libssl-dev \
-          zlib1g-dev libsqlite3-dev \
-          libbz2-dev libncurses-dev \
-          libreadline-dev liblzma-dev
+          libffi-dev \
+          libssl-dev \
+          liblzma-dev \
+          zlib1g-dev \
+          libncurses6 \
+          libstdc++6 \
+          wget \
+          cmake \
+          build-essential
 
-    # ✅ Install Android SDK + NDK SAFELY
-    - name: Install Android SDK & NDK
+    - name: Set JAVA_HOME
       run: |
-        mkdir -p $HOME/android-sdk
-        cd $HOME
+        echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+        echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
 
-        curl -sS https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdline-tools.zip
-        unzip -q cmdline-tools.zip
-        mkdir -p android-sdk/cmdline-tools/latest
-        mv cmdline-tools/* android-sdk/cmdline-tools/latest/
+    - name: Create virtual environment
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip setuptools wheel
 
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+    - name: Install Buildozer
+      run: |
+        source venv/bin/activate
+        pip install cython==0.29.36 buildozer
 
+    - name: Set Android SDK environment
+      run: |
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+
+    - name: Install Android SDK Command Line Tools
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        cd $HOME/android-sdk/cmdline-tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+        unzip commandlinetools-linux-9477386_latest.zip
+        mv cmdline-tools latest
+
+    - name: Accept Android licenses and install SDK packages
+      run: |
         yes | sdkmanager --licenses
         sdkmanager \
           "platform-tools" \
@@ -53,26 +75,11 @@ jobs:
           "build-tools;33.0.2" \
           "ndk;25.2.9519653"
 
-    - name: Create virtualenv
+    - name: Verify AIDL exists
       run: |
-        python -m venv venv
-        source venv/bin/activate
-        pip install --upgrade pip
+        ls -l $HOME/android-sdk/build-tools/33.0.2/aidl
 
-    - name: Install Buildozer
-      run: |
-        source venv/bin/activate
-        pip install cython==0.29.36
-        pip install buildozer==1.5.0
-
-    # 🔐 Prevent Buildozer from downloading anything
-    - name: Build APK
-      env:
-        ANDROID_SDK_ROOT: ${{ env.HOME }}/android-sdk
-        ANDROID_HOME: ${{ env.HOME }}/android-sdk
-        ANDROID_NDK_HOME: ${{ env.HOME }}/android-sdk/ndk/25.2.9519653
-        ANDROID_NDK_ROOT: ${{ env.HOME }}/android-sdk/ndk/25.2.9519653
-        BUILDOZER_ANDROID_ACCEPT_LICENSE: "true"
+    - name: Build APK with Buildozer
       run: |
         source venv/bin/activate
         buildozer android debug
@@ -80,5 +87,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: safespot-apk
+        name: Safespot-APK
         path: bin/*.apk
