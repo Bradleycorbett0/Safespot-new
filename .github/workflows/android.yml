@@ -10,67 +10,73 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
 
-    # 🔴 CRITICAL: Buildozer REQUIRES Python 3.10
-    - name: Set up Python 3.10
+    # 🔴 MUST be Python 3.10 (Buildozer compatible)
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Verify Python version
-      run: python --version
-
-    # System dependencies required by Buildozer / p4a
     - name: Install system dependencies
       run: |
         sudo apt update
         sudo apt install -y \
-          git zip unzip openjdk-17-jdk \
-          autoconf automake libtool \
-          pkg-config libltdl-dev \
+          openjdk-17-jdk \
+          unzip zip \
+          autoconf automake libtool pkg-config \
           build-essential \
           libffi-dev libssl-dev \
-          zlib1g-dev \
-          libsqlite3-dev \
-          libbz2-dev \
-          libncurses-dev \
-          libreadline-dev \
-          libgdbm-dev \
-          libnss3-dev \
-          liblzma-dev
+          zlib1g-dev libsqlite3-dev \
+          libbz2-dev libncurses-dev \
+          libreadline-dev liblzma-dev
 
-    # Create and activate virtual environment
+    # ✅ Install Android SDK + NDK SAFELY
+    - name: Install Android SDK & NDK
+      run: |
+        mkdir -p $HOME/android-sdk
+        cd $HOME
+
+        curl -sS https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdline-tools.zip
+        unzip -q cmdline-tools.zip
+        mkdir -p android-sdk/cmdline-tools/latest
+        mv cmdline-tools/* android-sdk/cmdline-tools/latest/
+
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+
+        yes | sdkmanager --licenses
+        sdkmanager \
+          "platform-tools" \
+          "platforms;android-33" \
+          "build-tools;33.0.2" \
+          "ndk;25.2.9519653"
+
     - name: Create virtualenv
       run: |
         python -m venv venv
         source venv/bin/activate
-        python --version
         pip install --upgrade pip
 
-    # Install Buildozer + requirements
     - name: Install Buildozer
       run: |
         source venv/bin/activate
         pip install cython==0.29.36
-        pip install buildozer
+        pip install buildozer==1.5.0
 
-    # Accept Android licenses automatically
-    - name: Accept Android SDK licenses
-      run: |
-        mkdir -p ~/.android
-        echo "count=0" > ~/.android/repositories.cfg
-
-    # Build APK
+    # 🔐 Prevent Buildozer from downloading anything
     - name: Build APK
       env:
+        ANDROID_SDK_ROOT: ${{ env.HOME }}/android-sdk
+        ANDROID_HOME: ${{ env.HOME }}/android-sdk
+        ANDROID_NDK_HOME: ${{ env.HOME }}/android-sdk/ndk/25.2.9519653
+        ANDROID_NDK_ROOT: ${{ env.HOME }}/android-sdk/ndk/25.2.9519653
         BUILDOZER_ANDROID_ACCEPT_LICENSE: "true"
       run: |
         source venv/bin/activate
         buildozer android debug
 
-    # Upload APK artifact
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
