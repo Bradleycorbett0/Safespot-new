@@ -18,12 +18,22 @@ jobs:
       with:
         python-version: "3.10"
 
+    - name: Set up Java 17 (MANDATORY)
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Export JAVA_HOME explicitly
+      run: |
+        echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
+        echo "$JAVA_HOME_17_X64/bin" >> $GITHUB_PATH
+
     - name: Install system dependencies
       run: |
         sudo apt update
         sudo apt install -y \
           zip unzip git wget \
-          openjdk-17-jdk \
           libncurses5 \
           libstdc++6 \
           libffi-dev \
@@ -52,9 +62,9 @@ jobs:
         echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
 
-    - name: Install Android SDK Command Line Tools (FIXED)
+    - name: Install Android SDK Command Line Tools
       run: |
-        mkdir -p $HOME/android-sdk
+        mkdir -p $HOME/android-sdk/cmdline-tools
         cd $HOME/android-sdk
 
         wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
@@ -64,11 +74,16 @@ jobs:
         mv cmdline-tools/* cmdline-tools/latest/ || true
         rm -f cmdline.zip
 
-    - name: Accept Android licenses
+    - name: Verify Java version (FAIL FAST)
+      run: |
+        java -version
+        sdkmanager --version
+
+    - name: Accept Android licenses (JAVA 17)
       run: |
         yes | sdkmanager --licenses
 
-    - name: Install Android SDK packages (PINNED)
+    - name: Install Android SDK packages (PINNED & STABLE)
       run: |
         sdkmanager \
           "platform-tools" \
