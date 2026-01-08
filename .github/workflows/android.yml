@@ -2,12 +2,12 @@ name: Build Android APK (Buildozer)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04   # IMPORTANT: 22.04 is stable for Buildozer
+  build-android:
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -20,25 +20,19 @@ jobs:
 
     - name: Install system dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          zip unzip \
-          git \
+        sudo apt update
+        sudo apt install -y \
+          zip unzip git \
           openjdk-17-jdk \
+          libncurses5 \
+          libstdc++6 \
           libffi-dev \
           libssl-dev \
-          liblzma-dev \
-          zlib1g-dev \
-          libncurses6 \
-          libstdc++6 \
-          wget \
-          cmake \
-          build-essential
-
-    - name: Set JAVA_HOME
-      run: |
-        echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
-        echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          zlib1g-dev
 
     - name: Create virtual environment
       run: |
@@ -51,33 +45,38 @@ jobs:
         source venv/bin/activate
         pip install cython==0.29.36 buildozer
 
-    - name: Set Android SDK environment
+    - name: Set Android SDK environment variables
       run: |
-        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
         echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
         echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
 
     - name: Install Android SDK Command Line Tools
       run: |
         mkdir -p $HOME/android-sdk/cmdline-tools
-        cd $HOME/android-sdk/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip commandlinetools-linux-9477386_latest.zip
-        mv cmdline-tools latest
+        cd $HOME/android-sdk
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
+        unzip -q cmdline.zip
+        mv cmdline-tools cmdline-tools-temp
+        mkdir cmdline-tools/latest
+        mv cmdline-tools-temp/* cmdline-tools/latest/
 
-    - name: Accept Android licenses and install SDK packages
+    - name: Accept Android licenses
       run: |
         yes | sdkmanager --licenses
+
+    - name: Install Android SDK packages (PINNED)
+      run: |
         sdkmanager \
           "platform-tools" \
           "platforms;android-33" \
           "build-tools;33.0.2" \
           "ndk;25.2.9519653"
 
-    - name: Verify AIDL exists
+    - name: Verify AIDL
       run: |
-        ls -l $HOME/android-sdk/build-tools/33.0.2/aidl
+        ls $HOME/android-sdk/build-tools/33.0.2/aidl
 
     - name: Build APK with Buildozer
       run: |
@@ -87,5 +86,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Safespot-APK
+        name: SafeSpot-APK
         path: bin/*.apk
