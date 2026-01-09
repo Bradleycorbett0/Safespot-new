@@ -6,13 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  android:
+  build:
     runs-on: ubuntu-22.04
 
     env:
       ANDROID_SDK_ROOT: /home/runner/android-sdk
       ANDROID_HOME: /home/runner/android-sdk
       ANDROID_NDK_HOME: /home/runner/android-ndk
+      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
 
     steps:
       - name: Checkout repository
@@ -20,82 +21,64 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            tar \
-            unzip \
-            zip \
-            wget \
-            git \
-            libgl1 \
-            libstdc++6 \
-            python3.10 \
-            python3.10-venv \
-            python3-pip
+          sudo apt update
+          sudo apt install -y \
+            python3.10 python3.10-venv python3-pip \
+            openjdk-17-jdk \
+            unzip zip \
+            git curl wget \
+            libncurses5 libstdc++6 \
+            build-essential \
+            autoconf automake libtool pkg-config \
+            zlib1g-dev
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Configure Android paths
-        run: |
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >> $GITHUB_ENV
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/build-tools/33.0.2" >> $GITHUB_PATH
-          echo "$ANDROID_NDK_HOME" >> $GITHUB_PATH
-
-      - name: Create Python virtual environment
+      - name: Set up Python virtualenv
         run: |
           python3.10 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install buildozer cython setuptools wheel
+          pip install buildozer cython
 
-      - name: Install Android SDK cmdline-tools
+      - name: Install Android SDK
         run: |
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
           cd $ANDROID_SDK_ROOT
+
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
           unzip -q cmdline.zip
-          mv cmdline-tools latest
-          rm cmdline.zip
-          mkdir -p cmdline-tools
-          mv latest cmdline-tools/latest
+          mkdir -p cmdline-tools/latest
+          mv cmdline-tools/* cmdline-tools/latest/ || true
 
-      - name: Install Android SDK packages
-        run: |
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+
           yes | sdkmanager --licenses
           sdkmanager \
             "platform-tools" \
             "platforms;android-33" \
             "build-tools;33.0.2"
 
-      - name: Install Android NDK r25c
+      - name: Install Android NDK (r25c)
         run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip -O ndk.zip
-          unzip -q ndk.zip
-          mv android-ndk-r25c $ANDROID_NDK_HOME
-          rm ndk.zip
+          cd /home/runner
+          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip -q android-ndk-r25c-linux.zip
+          mv android-ndk-r25c android-ndk
 
-      - name: Verify Android environment
+      - name: Verify toolchain
         run: |
-          which tar
           java -version
-          sdkmanager --list | head -n 10
+          source venv/bin/activate
+          buildozer --version
           ls $ANDROID_NDK_HOME
 
-      - name: Build APK with Buildozer
+      - name: Build APK
         run: |
           source venv/bin/activate
+          buildozer android clean
           buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: SafeSpot-APK
           path: bin/*.apk
