@@ -2,83 +2,114 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
-    env:
-      ANDROID_SDK_ROOT: /home/runner/android-sdk
-      ANDROID_HOME: /home/runner/android-sdk
-      ANDROID_NDK_HOME: /home/runner/android-ndk
-      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            python3.10 python3.10-venv python3-pip \
-            openjdk-17-jdk \
-            unzip zip \
-            git curl wget \
-            libncurses5 libstdc++6 \
-            build-essential \
-            autoconf automake libtool pkg-config \
-            zlib1g-dev
+    # -------------------------------
+    # System dependencies
+    # -------------------------------
+    - name: Install system packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          python3.10 \
+          python3.10-venv \
+          python3.10-dev \
+          python3-distutils \
+          openjdk-17-jdk \
+          unzip \
+          zip \
+          wget \
+          tar \
+          libffi-dev \
+          libssl-dev \
+          build-essential \
+          ccache
 
-      - name: Set up Python virtualenv
-        run: |
-          python3.10 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install buildozer cython
+    # -------------------------------
+    # Java 17 (REQUIRED)
+    # -------------------------------
+    - name: Set Java 17
+      run: |
+        sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+        java -version
 
-      - name: Install Android SDK
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          cd $ANDROID_SDK_ROOT
+    # -------------------------------
+    # Python venv
+    # -------------------------------
+    - name: Set up Python venv
+      run: |
+        python3.10 -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip setuptools wheel
 
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
-          unzip -q cmdline.zip
-          mkdir -p cmdline-tools/latest
-          mv cmdline-tools/* cmdline-tools/latest/ || true
+    # -------------------------------
+    # Install Buildozer
+    # -------------------------------
+    - name: Install Buildozer
+      run: |
+        source venv/bin/activate
+        pip install cython==0.29.36
+        pip install buildozer
 
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+    # -------------------------------
+    # Android SDK setup (CORRECT)
+    # -------------------------------
+    - name: Install Android SDK
+      env:
+        ANDROID_HOME: /home/runner/android-sdk
+      run: |
+        mkdir -p $ANDROID_HOME/cmdline-tools
+        cd $ANDROID_HOME
 
-          yes | sdkmanager --licenses
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.2"
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
+        unzip cmdline.zip
+        mkdir -p cmdline-tools/latest
+        mv cmdline-tools/* cmdline-tools/latest/ || true
+        mv cmdline-tools/latest/cmdline-tools/* cmdline-tools/latest/ || true
 
-      - name: Install Android NDK (r25c)
-        run: |
-          cd /home/runner
-          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
-          unzip -q android-ndk-r25c-linux.zip
-          mv android-ndk-r25c android-ndk
+        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-      - name: Verify toolchain
-        run: |
-          java -version
-          source venv/bin/activate
-          buildozer --version
-          ls $ANDROID_NDK_HOME
+    # -------------------------------
+    # Accept licenses + install SDK parts
+    # -------------------------------
+    - name: Install Android SDK packages
+      env:
+        ANDROID_HOME: /home/runner/android-sdk
+      run: |
+        yes | sdkmanager --licenses
 
-      - name: Build APK
-        run: |
-          source venv/bin/activate
-          buildozer android clean
-          buildozer android debug
+        sdkmanager \
+          "platform-tools" \
+          "platforms;android-33" \
+          "build-tools;33.0.2"
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: SafeSpot-APK
-          path: bin/*.apk
+    # -------------------------------
+    # Build APK
+    # -------------------------------
+    - name: Build APK
+      env:
+        ANDROID_HOME: /home/runner/android-sdk
+      run: |
+        source venv/bin/activate
+        buildozer android clean
+        buildozer -v android debug
+
+    # -------------------------------
+    # Upload APK
+    # -------------------------------
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: safespot-apk
+        path: bin/*.apk
