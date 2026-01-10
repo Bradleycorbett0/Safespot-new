@@ -1,44 +1,53 @@
 [app]
 title = SafeSpot
 package.name = safespot
-package.domain = org.safespot
-
-version = 0.1
+package.domain = com.bradleycorbettjones
+version = 1.0.0
 
 source.dir = .
-source.include_exts = py,png,jpg,kv,json
+source.include_exts = py,png,jpg,kv,atlas,json
 
 requirements = python3,kivy
 
 orientation = portrait
 fullscreen = 0
 
-icon.filename = %(source.dir)s/icon.png
-presplash.filename = %(source.dir)s/presplash.png
+# Entry point (adjust if your main file differs)
+entrypoint = main.py
 
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
-
-# CRITICAL: Force CI paths (prevents NDK download crash)
-android.sdk_path = /home/runner/android-sdk
-android.ndk_path = /home/runner/android-ndk
-
-log_level = 2
-
-
-[android]
+# Android configuration
 android.api = 33
 android.minapi = 21
-android.ndk = 25c
+android.ndk_api = 21
 
-p4a.branch = master
-p4a.bootstrap = sdl2
+android.permissions = INTERNET
+android.archs = arm64-v8a, armeabi-v7a
 
-gradle_dependencies =
+# Disable deprecated / problematic options
+android.sdk = 
+android.ndk = 
+android.sdk_path =
+android.ndk_path =
+
+# Logging
+log_level = 2
+
+# Fix for modern toolchains
+android.allow_backup = True
+android.accept_sdk_license = True
+
+# Gradle (recommended defaults)
+android.gradle_dependencies =
 android.enable_androidx = True
-android.enable_jetifier = True
 
-# DO NOT SET android.sdk or android.ndk here (deprecated)
+# Packaging
+android.private_storage = True
+android.release_artifact = apk
 
+# Keep build directories between runs
+presplash.filename =
+icon.filename =
 
 [buildozer]
-warn_on_root = 0
+warn_on_root = 1
+log_level = 2
