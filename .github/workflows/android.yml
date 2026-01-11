@@ -6,100 +6,79 @@ on:
   workflow_dispatch:
 
 jobs:
-  android:
+  build:
     runs-on: ubuntu-22.04
 
-    env:
-      ANDROID_SDK_ROOT: /home/runner/android-sdk
-      ANDROID_HOME: /home/runner/android-sdk
-      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
-
     steps:
-    # ------------------------------------------------------------
-    # Checkout
-    # ------------------------------------------------------------
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # ------------------------------------------------------------
-    # System dependencies (tar, unzip, Java, build tools)
-    # ------------------------------------------------------------
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          tar \
-          unzip \
-          zip \
-          wget \
-          curl \
-          git \
-          build-essential \
-          libffi-dev \
-          libssl-dev \
-          zlib1g-dev \
-          libncurses5 \
-          libncurses5-dev \
-          libstdc++6 \
-          openjdk-17-jdk
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            unzip \
+            zip \
+            tar \
+            wget \
+            curl \
+            git \
+            openjdk-17-jdk \
+            python3.10 \
+            python3.10-venv \
+            python3.10-dev \
+            build-essential \
+            libffi-dev \
+            libssl-dev \
+            zlib1g-dev
 
-    # ------------------------------------------------------------
-    # Python (MUST be quoted)
-    # ------------------------------------------------------------
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10.13"
+      - name: Set JAVA_HOME
+        run: |
+          echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
 
-    # ------------------------------------------------------------
-    # Virtual environment
-    # ------------------------------------------------------------
-    - name: Create virtualenv
-      run: |
-        python -m venv venv
-        source venv/bin/activate
-        pip install --upgrade pip setuptools wheel
-        pip install cython buildozer
+      - name: Create Python virtual environment
+        run: |
+          python3.10 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+          pip install buildozer cython
 
-    # ------------------------------------------------------------
-    # Android SDK command-line tools
-    # ------------------------------------------------------------
-    - name: Install Android SDK
-      run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT
+      - name: Install Android SDK Command Line Tools
+        run: |
+          mkdir -p $HOME/android-sdk
+          cd $HOME/android-sdk
 
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
-        unzip -q cmdline.zip
-        mv cmdline-tools cmdline-tools-temp
-        mkdir cmdline-tools/latest
-        mv cmdline-tools-temp/* cmdline-tools/latest
-        rm -rf cmdline-tools-temp cmdline.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline.zip
+          unzip -q cmdline.zip
 
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+          mkdir -p cmdline-tools/latest
+          mv cmdline-tools/* cmdline-tools/latest/ || true
 
-        yes | sdkmanager --licenses
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
 
-        sdkmanager \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.2" \
-          "ndk;25.2.9519653"
+      - name: Accept Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses
 
-    # ------------------------------------------------------------
-    # Buildozer build
-    # ------------------------------------------------------------
-    - name: Build APK with Buildozer
-      run: |
-        source venv/bin/activate
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-        buildozer -v android debug
+      - name: Install Android platforms & build-tools
+        run: |
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2" \
+            "ndk;25.2.9519653"
 
-    # ------------------------------------------------------------
-    # Upload artifact
-    # ------------------------------------------------------------
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: safespot-apk
-        path: bin/*.apk
+      - name: Build APK with Buildozer
+        run: |
+          source venv/bin/activate
+          buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Safespot-APK
+          path: bin/*.apk
