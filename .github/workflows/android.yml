@@ -2,55 +2,104 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build:
+  android:
     runs-on: ubuntu-22.04
 
+    env:
+      ANDROID_SDK_ROOT: /home/runner/android-sdk
+      ANDROID_HOME: /home/runner/android-sdk
+      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    # ------------------------------------------------------------
+    # Checkout
+    # ------------------------------------------------------------
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      # Install essential system packages
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            python3.10 python3.10-venv python3.10-dev \
-            openjdk-17-jdk zip unzip tar \
-            build-essential libncurses5 libstdc++6 libffi-dev libssl-dev
+    # ------------------------------------------------------------
+    # System dependencies (tar, unzip, Java, build tools)
+    # ------------------------------------------------------------
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          tar \
+          unzip \
+          zip \
+          wget \
+          curl \
+          git \
+          build-essential \
+          libffi-dev \
+          libssl-dev \
+          zlib1g-dev \
+          libncurses5 \
+          libncurses5-dev \
+          libstdc++6 \
+          openjdk-17-jdk
 
-      # Use Python 3.10 explicitly
-      - name: Setup Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.10
+    # ------------------------------------------------------------
+    # Python (MUST be quoted)
+    # ------------------------------------------------------------
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10.13"
 
-      # Create virtualenv and install buildozer
-      - name: Create virtual environment
-        run: |
-          python3.10 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install buildozer cython
+    # ------------------------------------------------------------
+    # Virtual environment
+    # ------------------------------------------------------------
+    - name: Create virtualenv
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip setuptools wheel
+        pip install cython buildozer
 
-      # Verify Python
-      - name: Verify Python version
-        run: |
-          source venv/bin/activate
-          python --version
+    # ------------------------------------------------------------
+    # Android SDK command-line tools
+    # ------------------------------------------------------------
+    - name: Install Android SDK
+      run: |
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        cd $ANDROID_SDK_ROOT
 
-      # Run Buildozer
-      - name: Build APK
-        run: |
-          source venv/bin/activate
-          buildozer android debug
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
+        unzip -q cmdline.zip
+        mv cmdline-tools cmdline-tools-temp
+        mkdir cmdline-tools/latest
+        mv cmdline-tools-temp/* cmdline-tools/latest
+        rm -rf cmdline-tools-temp cmdline.zip
 
-      # Upload APK as artifact
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: SafeSpot-APK
-          path: bin/*.apk
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+
+        yes | sdkmanager --licenses
+
+        sdkmanager \
+          "platform-tools" \
+          "platforms;android-33" \
+          "build-tools;33.0.2" \
+          "ndk;25.2.9519653"
+
+    # ------------------------------------------------------------
+    # Buildozer build
+    # ------------------------------------------------------------
+    - name: Build APK with Buildozer
+      run: |
+        source venv/bin/activate
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+        buildozer -v android debug
+
+    # ------------------------------------------------------------
+    # Upload artifact
+    # ------------------------------------------------------------
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: safespot-apk
+        path: bin/*.apk
