@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -13,59 +13,86 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Required system tools (fixes tar / unzip / etc)
-    - name: Install system dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y \
-          python3.10 python3.10-venv python3.10-dev \
-          openjdk-17-jdk \
-          git zip unzip tar \
-          libncurses5 libstdc++6 libffi-dev libssl-dev \
-          autoconf automake libtool pkg-config \
-          zlib1g-dev
-
-    # Python MUST be 3.10 for Buildozer stability
+    # -----------------------------
+    # Python (Buildozer compatible)
+    # -----------------------------
     - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
 
-    - name: Verify Python
-      run: python --version
+    # -----------------------------
+    # Java (required for Android)
+    # -----------------------------
+    - name: Set up Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
 
-    # Create venv
-    - name: Create virtual environment
+    # -----------------------------
+    # System dependencies
+    # -----------------------------
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          zip unzip tar \
+          build-essential \
+          libssl-dev \
+          libffi-dev \
+          libsqlite3-dev \
+          zlib1g-dev \
+          libncurses5 \
+          libstdc++6 \
+          git \
+          cmake \
+          wget
+
+    # -----------------------------
+    # Virtual environment
+    # -----------------------------
+    - name: Create virtualenv
       run: |
         python -m venv venv
         source venv/bin/activate
-        pip install --upgrade pip setuptools wheel
-
-    # Install Buildozer + p4a
-    - name: Install Buildozer
-      run: |
-        source venv/bin/activate
+        pip install --upgrade pip
         pip install buildozer cython
 
-    # Show spec to confirm NDK fix is present
-    - name: Show buildozer.spec
-      run: cat buildozer.spec
+    # -----------------------------
+    # Android SDK + cmdline tools
+    # -----------------------------
+    - name: Install Android SDK Command Line Tools
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        cd $HOME/android-sdk/cmdline-tools
 
-    # Accept Android licenses (non-interactive)
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+        unzip tools.zip
+        mv cmdline-tools latest
+
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+
     - name: Accept Android licenses
       run: |
-        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        yes | sdkmanager --licenses
 
+    # -----------------------------
     # Build APK
-    - name: Build Android APK
+    # -----------------------------
+    - name: Build APK with Buildozer
       run: |
         source venv/bin/activate
-        buildozer android debug
+        buildozer -v android debug
 
-    # Upload artifact
+    # -----------------------------
+    # Upload APK
+    # -----------------------------
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: SafeSpot-APK
+        name: Safespot-APK
         path: bin/*.apk
