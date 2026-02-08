@@ -24,24 +24,29 @@ jobs:
           sudo apt update
           sudo apt install -y \
             zip unzip tar \
+            git \
             openjdk-17-jdk \
             libffi-dev libssl-dev \
-            build-essential \
-            git
+            build-essential
+
+      - name: Set JAVA_HOME
+        run: |
+          echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
 
       - name: Create virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install cython buildozer
 
-      - name: Clean old buildozer cache
+      - name: Clean Buildozer cache
         run: |
           rm -rf ~/.buildozer
           rm -rf .buildozer
 
-      - name: Build APK (debug)
+      - name: Build APK
         run: |
           source venv/bin/activate
           buildozer android debug
