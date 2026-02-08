@@ -1,96 +1,53 @@
-[app]
+name: Build Android APK
 
-# (str) Title of your application
-title = SafeSpot
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-# (str) Package name
-package.name = safespot
+jobs:
+  build:
+    runs-on: ubuntu-22.04
 
-# (str) Package domain (needed for Android)
-package.domain = org.safespot
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-# (str) Source code where the main.py live
-source.dir = .
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-# (list) Source files to include
-source.include_exts = py,png,jpg,kv,json
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            zip unzip tar \
+            openjdk-17-jdk \
+            libffi-dev libssl-dev \
+            build-essential \
+            git
 
-# (str) Application versioning
-version = 0.1.0
+      - name: Create virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install buildozer cython
 
-# (list) Application requirements
-requirements = python3,kivy
+      - name: Clean old buildozer cache
+        run: |
+          rm -rf ~/.buildozer
+          rm -rf .buildozer
 
-# (str) Entry point
-entrypoint = main.py
+      - name: Build APK (debug)
+        run: |
+          source venv/bin/activate
+          buildozer android debug
 
-# (bool) Indicate if the application should be fullscreen or not
-fullscreen = 0
-
-
-# =========================
-# ANDROID CONFIG (CRITICAL)
-# =========================
-[android]
-
-# 🚨 DO NOT SET android.sdk (deprecated)
-# android.sdk =   <-- MUST NOT EXIST
-
-# (int) Android API to build against
-api = 31
-
-# ✅ REQUIRED — FIXES YOUR CRASH
-ndk = 25.2.9519653
-
-# (int) Minimum API your app supports
-minapi = 21
-
-# (list) Supported architectures
-arch = arm64-v8a,armeabi-v7a
-
-# (bool) Enable AndroidX
-androidx = True
-
-# (str) Java version (GitHub runners use 17)
-java.version = 17
-
-# (bool) Use gradle (required)
-use_gradle = True
-
-# (bool) Copy libs instead of symlinks
-copy_libs = True
-
-# (bool) Allow backups
-allow_backup = True
-
-# (str) Orientation
-orientation = portrait
-
-# (list) Permissions
-permissions = INTERNET,ACCESS_NETWORK_STATE
-
-# (bool) Enable logcat debugging
-logcat = True
-
-
-# =========================
-# BUILD OPTIONS
-# =========================
-
-# (bool) Enable debug symbols
-debug = True
-
-# (bool) Skip unnecessary builds
-p4a.local_recipes =
-
-# (bool) Clean build
-clean_build = False
-
-
-# =========================
-# LOGGING / OUTPUT
-# =========================
-[buildozer]
-
-log_level = 2
-warn_on_root = 0
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SafeSpot-APK
+          path: bin/*.apk
