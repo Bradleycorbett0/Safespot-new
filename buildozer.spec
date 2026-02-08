@@ -1,53 +1,38 @@
 [app]
 title = SafeSpot
 package.name = safespot
-package.domain = com.bradleycorbettjones
-version = 1.0.0
+package.domain = org.safespot
 
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py,kv,png,jpg,json
+
+version = 0.1
 
 requirements = python3,kivy
 
 orientation = portrait
+
 fullscreen = 0
 
-# Entry point (adjust if your main file differs)
-entrypoint = main.py
-
-# Android configuration
+# ANDROID SETTINGS
 android.api = 33
 android.minapi = 21
+
+# 🔴 REQUIRED — fixes the NoneType / group crash
+android.ndk = 25b
 android.ndk_api = 21
 
 android.permissions = INTERNET
-android.archs = arm64-v8a, armeabi-v7a
-
-# Disable deprecated / problematic options
-android.sdk = 
-android.ndk = 
-android.sdk_path =
-android.ndk_path =
-
-# Logging
-log_level = 2
-
-# Fix for modern toolchains
 android.allow_backup = True
-android.accept_sdk_license = True
 
-# Gradle (recommended defaults)
-android.gradle_dependencies =
-android.enable_androidx = True
+# DO NOT SET android.sdk (deprecated)
+# android.sdk = 33 ❌ REMOVE
 
-# Packaging
-android.private_storage = True
-android.release_artifact = apk
+# ARCHITECTURES
+android.archs = arm64-v8a,armeabi-v7a
 
-# Keep build directories between runs
-presplash.filename =
-icon.filename =
+# LOGGING
+log_level = 2
 
 [buildozer]
 warn_on_root = 1
-log_level = 2
