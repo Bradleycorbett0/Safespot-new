@@ -1,38 +1,73 @@
 [app]
+
+# (str) Title of your application
 title = SafeSpot
+
+# (str) Package name
 package.name = safespot
-package.domain = org.safespot
 
+# (str) Package domain (must match your Firebase setup)
+package.domain = com.bradleycorbettjones
+
+# (str) Source code location
 source.dir = .
-source.include_exts = py,kv,png,jpg,json
 
-version = 0.1
+# (list) Source files to include
+source.include_exts = py,kv,png,jpg,jpeg,atlas,json
 
+# (str) Application version
+version = 1.0
+
+# (list) Requirements
 requirements = python3,kivy
 
+# (str) Orientation
 orientation = portrait
 
+# (bool) Fullscreen
 fullscreen = 0
 
-# ANDROID SETTINGS
+
+# ==================================================
+# ANDROID SETTINGS (CRITICAL SECTION)
+# ==================================================
+
+# Target API
 android.api = 33
+
+# Minimum supported API
 android.minapi = 21
 
-# 🔴 REQUIRED — fixes the NoneType / group crash
+# Force NDK version (fixes NoneType error)
 android.ndk = 25b
+
+# NDK API
 android.ndk_api = 21
 
-android.permissions = INTERNET
-android.allow_backup = True
+# Force compatible Build Tools
+android.sdk_build_tools_version = 33.0.2
 
-# DO NOT SET android.sdk (deprecated)
-# android.sdk = 33 ❌ REMOVE
+# Permissions (adjust if needed later)
+android.permissions = INTERNET,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION
 
-# ARCHITECTURES
-android.archs = arm64-v8a,armeabi-v7a
+# AndroidX support
+android.enable_androidx = True
 
-# LOGGING
-log_level = 2
+# ==================================================
+# BUILD OPTIONS
+# ==================================================
 
-[buildozer]
+# (bool) Use logcat
+logcat_filters = *:S python:D
+
+# (bool) Warn on Python 2 syntax
 warn_on_root = 1
+
+
+# ==================================================
+# DEBUG / RELEASE
+# ==================================================
+
+# Uncomment for release builds later
+# android.release_artifact = aab
+# android.debug_artifact = apk
