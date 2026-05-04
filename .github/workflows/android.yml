@@ -31,24 +31,9 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            git zip unzip tar wget \
-            openjdk-17-jdk \
-            build-essential \
-            libffi-dev libssl-dev
+          sudo apt-get install -y git zip unzip tar wget openjdk-17-jdk build-essential libffi-dev libssl-dev
 
-      - name: Set Java and Android paths
-        run: |
-          echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
-          echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
-          echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROIDSDK=$SDK_ROOT" >> $GITHUB_ENV
-          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          echo "$SDK_ROOT/build-tools/$ANDROID_BUILD_TOOLS" >> $GITHUB_PATH
-
-      - name: Clean old build folders
+      - name: Clean old folders
         run: |
           rm -rf ~/.buildozer
           rm -rf .buildozer
@@ -57,31 +42,40 @@ jobs:
       - name: Install Android command line tools
         run: |
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
-          mkdir -p /tmp/android-tools
           unzip -q cmdline.zip -d /tmp/android-tools
           rm cmdline.zip
-
           mkdir -p "$SDK_ROOT/cmdline-tools"
           mv /tmp/android-tools/cmdline-tools "$SDK_ROOT/cmdline-tools/latest"
+
+      - name: Create old sdkmanager path wrapper
+        run: |
+          mkdir -p "$SDK_ROOT/tools/bin"
+          cat > "$SDK_ROOT/tools/bin/sdkmanager" <<EOF
+          #!/bin/bash
+          exec "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "\$@"
+          EOF
+          chmod +x "$SDK_ROOT/tools/bin/sdkmanager"
+
+      - name: Set environment paths
+        run: |
+          echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
+          echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROIDSDK=$SDK_ROOT" >> $GITHUB_ENV
+          echo "$SDK_ROOT/tools/bin" >> $GITHUB_PATH
+          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$SDK_ROOT/build-tools/$ANDROID_BUILD_TOOLS" >> $GITHUB_PATH
 
       - name: Accept Android licenses
         run: |
           mkdir -p "$SDK_ROOT/licenses"
-
-          cat > "$SDK_ROOT/licenses/android-sdk-license" <<EOF
-          24333f8a63b6825ea9c5514f83c2829b004d1fee
-          d56f5187479451eabf01fb78af6dfcb131a6481e
-          EOF
-
-          cat > "$SDK_ROOT/licenses/android-sdk-preview-license" <<EOF
-          84831b9409646a918e30573bab4c9c91346d8abd
-          EOF
-
-          yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" --licenses || true
+          yes | "$SDK_ROOT/tools/bin/sdkmanager" --sdk_root="$SDK_ROOT" --licenses || true
 
       - name: Install Android SDK packages
         run: |
-          "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" \
+          "$SDK_ROOT/tools/bin/sdkmanager" --sdk_root="$SDK_ROOT" \
             "platform-tools" \
             "platforms;android-${ANDROID_API}" \
             "build-tools;${ANDROID_BUILD_TOOLS}" \
