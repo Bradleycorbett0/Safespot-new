@@ -1,73 +1,52 @@
 [app]
 
-# (str) Title of your application
 title = SafeSpot
-
-# (str) Package name
 package.name = safespot
-
-# (str) Package domain (must match your Firebase setup)
 package.domain = com.bradleycorbettjones
 
-# (str) Source code location
 source.dir = .
+source.include_exts = py,kv,png,jpg,jpeg,json,txt
 
-# (list) Source files to include
-source.include_exts = py,kv,png,jpg,jpeg,atlas,json
+source.include_patterns = assets/*,assets/*.png,assets/*.jpg,assets/*.jpeg,screens/*,screens/*.py
 
-# (str) Application version
 version = 1.0
 
-# (list) Requirements
 requirements = python3,kivy
 
-# (str) Orientation
 orientation = portrait
 
-# (bool) Fullscreen
 fullscreen = 0
 
-
-# ==================================================
-# ANDROID SETTINGS (CRITICAL SECTION)
-# ==================================================
-
-# Target API
 android.api = 33
-
-# Minimum supported API
 android.minapi = 21
-
-# Force NDK version (fixes NoneType error)
 android.ndk = 25b
+android.sdk = 33
+android.accept_sdk_license = True
 
-# NDK API
-android.ndk_api = 21
+android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
-# Force compatible Build Tools
-android.sdk_build_tools_version = 33.0.2
+android.archs = arm64-v8a, armeabi-v7a
 
-# Permissions (adjust if needed later)
-android.permissions = INTERNET,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION
+presplash.filename = assets/safespot_logo.png
+icon.filename = assets/safespot_logo.png
 
-# AndroidX support
+log_level = 2
+
+warn_on_root = 0
+
+osx.python_version = 3
+osx.kivy_version = 2.3.0
+
+p4a.branch = master
+
+android.gradle_dependencies =
+
 android.enable_androidx = True
 
-# ==================================================
-# BUILD OPTIONS
-# ==================================================
+android.add_packaging_options = META-INF/*.kotlin_module
 
-# (bool) Use logcat
-logcat_filters = *:S python:D
+[buildozer]
 
-# (bool) Warn on Python 2 syntax
-warn_on_root = 1
+log_level = 2
 
-
-# ==================================================
-# DEBUG / RELEASE
-# ==================================================
-
-# Uncomment for release builds later
-# android.release_artifact = aab
-# android.debug_artifact = apk
+warn_on_root = 0
