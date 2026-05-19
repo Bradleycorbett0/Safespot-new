@@ -15,15 +15,15 @@ jobs:
 
     env:
       SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
+      NDK_ROOT: /home/runner/.buildozer/android/platform/android-ndk-r25b
       ANDROID_API: "33"
       ANDROID_BUILD_TOOLS: "33.0.2"
-      ANDROID_NDK_VERSION: "25.2.9519653"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -31,24 +31,30 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip tar wget openjdk-17-jdk build-essential libffi-dev libssl-dev
+          sudo apt-get install -y \
+            git zip unzip tar wget curl \
+            openjdk-17-jdk \
+            build-essential \
+            libffi-dev libssl-dev \
+            autoconf automake libtool pkg-config \
+            zlib1g-dev libncurses6
 
-      - name: Clean old folders
+      - name: Clean old Buildozer files
         run: |
           rm -rf ~/.buildozer
           rm -rf .buildozer
-          mkdir -p "$SDK_ROOT/cmdline-tools"
+          mkdir -p "$SDK_ROOT"
+          mkdir -p "/home/runner/.buildozer/android/platform"
 
-      - name: Install Android command line tools
+      - name: Install Android SDK command tools
         run: |
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
           unzip -q cmdline.zip -d /tmp/android-tools
           rm cmdline.zip
+
           mkdir -p "$SDK_ROOT/cmdline-tools"
           mv /tmp/android-tools/cmdline-tools "$SDK_ROOT/cmdline-tools/latest"
 
-      - name: Create old sdkmanager path wrapper
-        run: |
           mkdir -p "$SDK_ROOT/tools/bin"
           cat > "$SDK_ROOT/tools/bin/sdkmanager" <<EOF
           #!/bin/bash
@@ -60,9 +66,14 @@ jobs:
         run: |
           echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
           echo "/usr/lib/jvm/temurin-17-jdk-amd64/bin" >> $GITHUB_PATH
+
           echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROIDSDK=$SDK_ROOT" >> $GITHUB_ENV
+
+          echo "ANDROID_NDK_HOME=$NDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROIDNDK=$NDK_ROOT" >> $GITHUB_ENV
+
           echo "$SDK_ROOT/tools/bin" >> $GITHUB_PATH
           echo "$SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$SDK_ROOT/platform-tools" >> $GITHUB_PATH
@@ -78,12 +89,20 @@ jobs:
           "$SDK_ROOT/tools/bin/sdkmanager" --sdk_root="$SDK_ROOT" \
             "platform-tools" \
             "platforms;android-${ANDROID_API}" \
-            "build-tools;${ANDROID_BUILD_TOOLS}" \
-            "ndk;${ANDROID_NDK_VERSION}"
+            "build-tools;${ANDROID_BUILD_TOOLS}"
 
-      - name: Verify AIDL
+      - name: Install Android NDK r25b manually
+        run: |
+          cd /home/runner/.buildozer/android/platform
+          wget -q --show-progress https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
+          unzip -q ndk.zip
+          rm ndk.zip
+          test -d "$NDK_ROOT"
+
+      - name: Verify Android tools
         run: |
           ls -l "$SDK_ROOT/build-tools/$ANDROID_BUILD_TOOLS/aidl"
+          ls -l "$NDK_ROOT/ndk-build"
 
       - name: Install Buildozer
         run: |
@@ -98,8 +117,8 @@ jobs:
           export ANDROID_HOME="$SDK_ROOT"
           export ANDROID_SDK_ROOT="$SDK_ROOT"
           export ANDROIDSDK="$SDK_ROOT"
-          export ANDROID_NDK_HOME="$SDK_ROOT/ndk/$ANDROID_NDK_VERSION"
-          export ANDROIDNDK="$SDK_ROOT/ndk/$ANDROID_NDK_VERSION"
+          export ANDROID_NDK_HOME="$NDK_ROOT"
+          export ANDROIDNDK="$NDK_ROOT"
           buildozer android debug
 
       - name: Upload APK
