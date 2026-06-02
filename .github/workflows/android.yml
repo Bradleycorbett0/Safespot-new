@@ -30,17 +30,24 @@ jobs:
             autoconf automake libtool pkg-config \
             zlib1g-dev libncurses5-dev
 
+      - name: Hard clean Buildozer cache
+        run: |
+          rm -rf .buildozer
+          rm -rf ~/.buildozer
+          rm -rf bin
+          rm -rf ~/.cache/pip
+          rm -rf ~/.gradle/caches
+
       - name: Install Buildozer only
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install cython==0.29.36
           python -m pip install buildozer
 
-      - name: Clean old build
+      - name: Show buildozer spec
         run: |
-          rm -rf .buildozer
-          rm -rf ~/.buildozer
-          rm -rf bin
+          cat buildozer.spec
+          grep -n "requirements" buildozer.spec
 
       - name: Build APK
         run: |
