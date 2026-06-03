@@ -11,7 +11,7 @@ source.include_patterns = screens/*,screens/*.py,assets/*,assets/*.png,assets/*.
 
 version = 1.0
 
-requirements = python3,kivy
+requirements = python3,kivy==2.2.1
 
 orientation = portrait
 fullscreen = 0
@@ -30,6 +30,8 @@ android.archs = arm64-v8a, armeabi-v7a
 
 android.enable_androidx = True
 android.add_packaging_options = META-INF/*.kotlin_module
+
+p4a.branch = v2024.01.21
 
 log_level = 2
 warn_on_root = 0
