@@ -21,15 +21,12 @@ android.minapi = 21
 android.ndk = 25b
 android.ndk_api = 21
 android.sdk_build_tools_version = 33.0.2
-
 android.accept_sdk_license = True
 
 android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
 android.archs = arm64-v8a, armeabi-v7a
-
 android.enable_androidx = True
-android.add_packaging_options = META-INF/*.kotlin_module
 
 p4a.branch = v2024.01.21
 
