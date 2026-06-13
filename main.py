@@ -17,6 +17,7 @@ Window.clearcolor = (1, 1, 1, 1)
 class ErrorScreen(Screen):
     def __init__(self, error_text="", **kwargs):
         super().__init__(**kwargs)
+
         self.add_widget(Label(
             text=error_text,
             color=(1, 0, 0, 1),
@@ -38,7 +39,8 @@ class SplashScreen(Screen):
 
         self.layout = AnchorLayout(anchor_x="center", anchor_y="center")
 
-        logo_path = "assets/safespot_logo.png"
+        logo_path = "safespot_logo.png"
+
         if os.path.exists(logo_path):
             self.logo = Image(
                 source=logo_path,
@@ -64,8 +66,10 @@ class SplashScreen(Screen):
     def on_enter(self):
         fade_in = Animation(opacity=1, duration=0.7)
         fade_out = Animation(opacity=0, duration=0.5)
+
         fade_in.bind(on_complete=lambda *x: fade_out.start(self.logo))
         fade_out.bind(on_complete=lambda *x: self.go_to_login())
+
         fade_in.start(self.logo)
 
     def go_to_login(self, *args):
@@ -82,23 +86,32 @@ class SafeSpotApp(App):
         sm = ScreenManager(transition=NoTransition())
 
         try:
-            from screens.login import LoginScreen
-            from screens.permission import PermissionScreen
-            from screens.home import HomeScreen
-            from screens.add import AddSpotScreen
-            from screens.spots import SpotsScreen
-            from screens.emergency import EmergencyContactsScreen
-            from screens.events import EventsScreen
-            from screens.settings import SettingsScreen
-            from screens.about import AboutScreen
-            from screens.comments import CommentsScreen
-            from screens.gallery import ImageGalleryScreen
-            from screens.adpermission import AdPermissionScreen
+            from login import LoginScreen
+            from permission import PermissionScreen
+            from home import HomeScreen
+            from add import AddSpotScreen
+            from spots import SpotsScreen
+            from emergency import EmergencyContactsScreen
+            from events import EventsScreen
+            from settings import SettingsScreen
+            from about import AboutScreen
+            from comments import CommentsScreen
+            from gallery import ImageGalleryScreen
+
+            try:
+                from adpermission import AdPermissionScreen
+                has_ad_permission = True
+            except Exception:
+                AdPermissionScreen = None
+                has_ad_permission = False
 
             sm.add_widget(SplashScreen(name="splash"))
             sm.add_widget(LoginScreen(name="login"))
             sm.add_widget(PermissionScreen(name="permission"))
-            sm.add_widget(AdPermissionScreen(name="adpermission"))
+
+            if has_ad_permission:
+                sm.add_widget(AdPermissionScreen(name="adpermission"))
+
             sm.add_widget(HomeScreen(name="home"))
             sm.add_widget(AddSpotScreen(name="add"))
             sm.add_widget(SpotsScreen(name="spots"))
@@ -122,6 +135,7 @@ class SafeSpotApp(App):
     def save_user_data(self, key, value):
         data = self.load_user_data()
         data[key] = value
+
         try:
             with open(self.data_file, "w") as f:
                 json.dump(data, f)
@@ -136,6 +150,7 @@ class SafeSpotApp(App):
                     return data if isinstance(data, dict) else {}
             except Exception as e:
                 print(f"Error loading user data: {e}")
+
         return {}
 
 
