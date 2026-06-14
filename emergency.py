@@ -6,19 +6,28 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.scrollview import ScrollView
 
 
 class EmergencyContactsScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        layout = BoxLayout(orientation="vertical", padding=20, spacing=12)
+        scroll = ScrollView(size_hint=(1, 1))
+
+        layout = BoxLayout(
+            orientation="vertical",
+            padding=20,
+            spacing=12,
+            size_hint_y=None
+        )
+        layout.bind(minimum_height=layout.setter("height"))
 
         title = Label(
             text="Emergency Contacts",
             font_size="24sp",
             size_hint_y=None,
-            height=60
+            height=70
         )
         layout.add_widget(title)
 
@@ -44,7 +53,8 @@ class EmergencyContactsScreen(Screen):
         back_btn.bind(on_press=lambda x: setattr(self.manager, "current", "home"))
         layout.add_widget(back_btn)
 
-        self.add_widget(layout)
+        scroll.add_widget(layout)
+        self.add_widget(scroll)
 
     def load_contacts(self):
         file_path = "emergency.json"
@@ -52,7 +62,8 @@ class EmergencyContactsScreen(Screen):
         if os.path.exists(file_path):
             try:
                 with open(file_path, "r") as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    return data if isinstance(data, list) else []
             except Exception as e:
                 print(f"Error loading emergency.json: {e}")
 
