@@ -4,6 +4,12 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 
+try:
+    from android.permissions import request_permissions, Permission
+    ANDROID_AVAILABLE = True
+except Exception:
+    ANDROID_AVAILABLE = False
+
 class PermissionScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -37,5 +43,19 @@ class PermissionScreen(Screen):
         self.bg_rect.size = self.size
 
     def grant_permissions(self, *args):
-        # Just switch to home screen for now
+        """Request runtime permissions and proceed to home screen."""
+        if ANDROID_AVAILABLE:
+            try:
+                request_permissions([
+                    Permission.CAMERA,
+                    Permission.READ_EXTERNAL_STORAGE,
+                    Permission.WRITE_EXTERNAL_STORAGE,
+                    Permission.INTERNET,
+                    Permission.ACCESS_FINE_LOCATION,
+                    Permission.ACCESS_COARSE_LOCATION,
+                ])
+            except Exception as e:
+                print(f"Error requesting permissions: {e}")
+        
+        # Switch to home screen
         self.manager.current = 'home'
