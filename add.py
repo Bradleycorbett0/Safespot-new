@@ -8,15 +8,16 @@ from kivy.uix.spinner import Spinner
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
-import requests
-
-FIREBASE_DB = "https://safespot-c5e02-default-rtdb.europe-west1.firebasedatabase.app/spots.json"
+from firebase_config import save_spot_to_firebase, initialize_firebase
 
 
 class AddSpotScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Window.softinput_mode = "resize"
+        
+        # Initialize Firebase when screen is created
+        initialize_firebase()
 
         layout = BoxLayout(orientation="vertical", padding=10, spacing=10)
         scroll = ScrollView(size_hint=(1, 1))
@@ -123,23 +124,16 @@ class AddSpotScreen(Screen):
             self.show_popup("Please add a description.")
             return
 
-        data = {
-            "city": city,
-            "name": name,
-            "description": desc
-        }
-
-        try:
-            res = requests.post(FIREBASE_DB, json=data)
-            if res.status_code == 200:
-                self.show_popup("✅ Spot added successfully!")
-                self.name_input.text = ""
-                self.desc_input.text = ""
-                self.city_spinner.text = "Select a City"
-            else:
-                self.show_popup("⚠️ Failed to save to cloud.")
-        except Exception as e:
-            self.show_popup(f"Error: {e}")
+        # Save to Firebase using the new config module
+        result = save_spot_to_firebase(city, name, desc)
+        
+        if result['success']:
+            self.show_popup(result['message'])
+            self.name_input.text = ""
+            self.desc_input.text = ""
+            self.city_spinner.text = "Select a City"
+        else:
+            self.show_popup(result['message'])
 
     def show_popup(self, message):
         Popup(
