@@ -8,11 +8,11 @@ package.domain = com.bradleycorbettjones
 source.dir = .
 
 source.include_exts = py,kv,png,jpg,jpeg,json,txt,atlas
-source.include_patterns = screens/*,assets/*
+source.include_patterns = .py,.json,.png,.jpg,.jpeg,assets/
 
 version = 1.0
 
-requirements = python3,kivy==2.2.1
+requirements = python3,kivy==2.2.1,requests
 
 orientation = portrait
 
@@ -28,9 +28,9 @@ android.sdk_build_tools_version = 33.0.2
 
 android.accept_sdk_license = True
 
-android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,CAMERA
 
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a,armeabi-v7a
 
 android.enable_androidx = True
 
