@@ -55,3 +55,61 @@ def delete_data(path):
     except Exception as e:
         print("🔥 DELETE request failed:", e)
         return False
+
+
+def initialize_firebase():
+    """
+    Initialize Firebase connection.
+    Called when the app starts or when AddSpotScreen is created.
+    """
+    try:
+        # Test connection by fetching a small piece of data
+        response = requests.get(f"{FIREBASE_URL}/.json?shallow=true")
+        if response.status_code == 200:
+            print("✅ Firebase connection initialized successfully")
+            return True
+        else:
+            print("❌ Firebase connection failed:", response.text)
+            return False
+    except Exception as e:
+        print("🔥 Firebase initialization failed:", e)
+        return False
+
+
+def save_spot_to_firebase(city, name, description):
+    """
+    Save a new safe spot to Firebase
+    Args:
+        city: The city where the spot is located
+        name: Name of the safe spot
+        description: Description of the safe spot
+    Returns:
+        Dictionary with 'success' and 'message' keys
+    """
+    try:
+        # Create spot data
+        spot_data = {
+            "name": name,
+            "description": description
+        }
+        
+        # Save to Firebase under spots/<city>/<name>
+        path = f"spots/{city}/{name}"
+        result = save_data(path, spot_data)
+        
+        if result is not None:
+            return {
+                "success": True,
+                "message": f"✅ '{name}' saved to {city}!"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "❌ Failed to save spot. Please try again."
+            }
+    except Exception as e:
+        print(f"🔥 Error saving spot: {e}")
+        return {
+            "success": False,
+            "message": f"❌ Error: {str(e)}"
+        }
