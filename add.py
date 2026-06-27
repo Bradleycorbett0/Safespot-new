@@ -1,3 +1,6 @@
+import re
+import traceback
+
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
@@ -5,26 +8,35 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
+from kivy.uix.popup import Popup
 from kivy.app import App
 from kivy.core.window import Window
-from kivy.uix.popup import Popup
-from firebase_config import save_spot_to_firebase, initialize_firebase
+
+from firebase_config import save_data
 
 
 class AddSpotScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Window.softinput_mode = "resize"
-        
-        # Initialize Firebase when screen is created
-        initialize_firebase()
 
-        layout = BoxLayout(orientation="vertical", padding=10, spacing=10)
+        Window.softinput_mode = "resize"
+
+        layout = BoxLayout(
+            orientation="vertical",
+            padding=10,
+            spacing=10
+        )
+
         scroll = ScrollView(size_hint=(1, 1))
-        box = BoxLayout(orientation="vertical", padding=10, spacing=10, size_hint_y=None)
+
+        box = BoxLayout(
+            orientation="vertical",
+            padding=10,
+            spacing=10,
+            size_hint_y=None
+        )
         box.bind(minimum_height=box.setter("height"))
 
-        # Title
         title = Label(
             text="[b]Add a New Safe Spot[/b]",
             markup=True,
@@ -35,109 +47,141 @@ class AddSpotScreen(Screen):
         )
         box.add_widget(title)
 
-        # City dropdown
-        default_cities = sorted([
-            "Aberdeen", "Bangor", "Bath", "Belfast", "Birmingham", "Blackpool",
-            "Bolton", "Bournemouth", "Bradford", "Brighton", "Bristol", "Cambridge",
-            "Canterbury", "Cardiff", "Carlisle", "Chelmsford", "Chester", "Colchester",
-            "Coventry", "Derby", "Dundee", "Durham", "Edinburgh", "Exeter", "Glasgow",
-            "Gloucester", "Hereford", "Inverness", "Kingston upon Hull", "Lancaster",
-            "Leeds", "Leicester", "Lincoln", "Liverpool", "London", "Luton",
-            "Manchester", "Middlesbrough", "Milton Keynes", "Newcastle", "Newport",
-            "Norwich", "Nottingham", "Oxford", "Peterborough", "Plymouth", "Portsmouth",
-            "Preston", "Reading", "Sheffield", "Southampton", "St Albans",
-            "Stoke-on-Trent", "Sunderland", "Swansea", "Truro", "Wakefield",
-            "Wolverhampton", "Worcester", "York"
+        cities = sorted([
+            "Aberdeen", "Bangor", "Bath", "Belfast", "Birmingham",
+            "Blackpool", "Bolton", "Bournemouth", "Bradford",
+            "Brighton", "Bristol", "Cambridge", "Canterbury",
+            "Cardiff", "Carlisle", "Chelmsford", "Chester",
+            "Colchester", "Coventry", "Derby", "Dundee",
+            "Durham", "Edinburgh", "Exeter", "Glasgow",
+            "Gloucester", "Hereford", "Inverness",
+            "Kingston upon Hull", "Lancaster", "Leeds",
+            "Leicester", "Lincoln", "Liverpool", "London",
+            "Luton", "Manchester", "Middlesbrough",
+            "Milton Keynes", "Newcastle", "Newport",
+            "Norwich", "Nottingham", "Oxford",
+            "Peterborough", "Plymouth", "Portsmouth",
+            "Preston", "Reading", "Sheffield",
+            "Southampton", "St Albans", "Stoke-on-Trent",
+            "Sunderland", "Swansea", "Truro",
+            "Wakefield", "Wolverhampton",
+            "Worcester", "York"
         ])
 
         self.city_spinner = Spinner(
             text="Select a City",
-            values=default_cities,
+            values=cities,
             size_hint_y=None,
-            height=55,
-            background_color=(0.1, 0.2, 0.5, 1),
-            color=(1, 1, 1, 1),
-            font_size="18sp"
+            height=55
         )
         box.add_widget(self.city_spinner)
 
-        # Safe Spot Name
         self.name_input = TextInput(
-            hint_text="Enter Safe Spot name",
+            hint_text="Safe Spot Name",
             multiline=False,
             size_hint_y=None,
-            height=55,
-            font_size="18sp"
+            height=55
         )
         box.add_widget(self.name_input)
 
-        # Safe Spot Description
         self.desc_input = TextInput(
-            hint_text="Describe the Safe Spot",
+            hint_text="Describe this safe spot",
             multiline=True,
             size_hint_y=None,
-            height=150,
-            font_size="18sp"
+            height=150
         )
         box.add_widget(self.desc_input)
 
-        # Save button
-        save_button = Button(
+        save_btn = Button(
             text="💾 Save Spot to Cloud",
             size_hint_y=None,
             height=55,
-            background_color=(0, 0.4, 0, 1),
-            color=(1, 1, 1, 1),
-            font_size="18sp"
+            background_color=(0, 0.5, 0, 1)
         )
-        save_button.bind(on_release=self.save_spot)
-        box.add_widget(save_button)
+        save_btn.bind(on_release=self.save_spot)
+        box.add_widget(save_btn)
 
-        # Back button
-        back_button = Button(
+        back_btn = Button(
             text="⬅ Back to Home",
             size_hint_y=None,
             height=55,
-            background_color=(0.4, 0, 0, 1),
-            color=(1, 1, 1, 1),
-            font_size="18sp"
+            background_color=(0.5, 0, 0, 1)
         )
-        back_button.bind(on_release=lambda x: setattr(App.get_running_app().root, "current", "home"))
-        box.add_widget(back_button)
+        back_btn.bind(
+            on_release=lambda x: setattr(
+                App.get_running_app().root,
+                "current",
+                "home"
+            )
+        )
+        box.add_widget(back_btn)
 
         scroll.add_widget(box)
         layout.add_widget(scroll)
         self.add_widget(layout)
 
+    def safe_key(self, text):
+        text = text.lower().strip()
+        text = re.sub(r"[^a-z0-9]+", "_", text)
+        return text.strip("_")
+
     def save_spot(self, instance):
+
         city = self.city_spinner.text
         name = self.name_input.text.strip()
         desc = self.desc_input.text.strip()
 
-        if not city or city == "Select a City":
+        if city == "Select a City":
             self.show_popup("Please select a city.")
             return
+
         if not name:
             self.show_popup("Please enter a name.")
             return
+
         if not desc:
-            self.show_popup("Please add a description.")
+            self.show_popup("Please enter a description.")
             return
 
-        # Save to Firebase using the new config module
-        result = save_spot_to_firebase(city, name, desc)
-        
-        if result['success']:
-            self.show_popup(result['message'])
-            self.name_input.text = ""
-            self.desc_input.text = ""
-            self.city_spinner.text = "Select a City"
-        else:
-            self.show_popup(result['message'])
+        city_key = self.safe_key(city)
+        spot_key = self.safe_key(name)
+
+        data = {
+            "city": city,
+            "name": name,
+            "description": desc,
+            "location": f"{name}, {city}"
+        }
+
+        try:
+            result = save_data(
+                f"spots/{city_key}/{spot_key}",
+                data
+            )
+
+            if result is not None:
+                self.show_popup("✅ Spot saved successfully!")
+
+                self.city_spinner.text = "Select a City"
+                self.name_input.text = ""
+                self.desc_input.text = ""
+
+            else:
+                self.show_popup(
+                    "❌ Failed to save to Firebase.\n\n"
+                    "Check your Firebase rules."
+                )
+
+        except Exception:
+            self.show_popup(traceback.format_exc())
 
     def show_popup(self, message):
         Popup(
             title="SafeSpot",
-            content=Label(text=message, font_size="18sp"),
-            size_hint=(0.8, 0.3)
+            content=Label(
+                text=message,
+                halign="center",
+                valign="middle"
+            ),
+            size_hint=(0.85, 0.4)
         ).open()
