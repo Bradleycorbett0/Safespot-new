@@ -1,6 +1,8 @@
 import os
+
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.image import Image
@@ -12,163 +14,196 @@ class AboutScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # --- Background ---
         with self.canvas.before:
             Color(1, 0.98, 0.94, 1)
             self.bg_rect = Rectangle(pos=self.pos, size=self.size)
+
         self.bind(size=self._update_bg, pos=self._update_bg)
 
-        # --- Main layout ---
-        layout = BoxLayout(orientation='vertical', padding=[30, 35, 30, 15], spacing=8)
+        root = BoxLayout(
+            orientation="vertical",
+            padding=[18, 18, 18, 12],
+            spacing=10
+        )
 
-        # --- Larger logo ---
-        logo_path = "/storage/emulated/0/safespot/logo.png"
+        scroll = ScrollView(size_hint=(1, 1))
+
+        content = BoxLayout(
+            orientation="vertical",
+            padding=[6, 6, 6, 6],
+            spacing=14,
+            size_hint_y=None
+        )
+        content.bind(minimum_height=content.setter("height"))
+
+        logo_path = "safespot_logo.png"
+        if not os.path.exists(logo_path):
+            logo_path = "logo.png"
+
         if os.path.exists(logo_path):
             logo = Image(
                 source=logo_path,
-                size_hint=(1, 1.2),
+                size_hint_y=None,
+                height=130,
                 allow_stretch=True,
                 keep_ratio=True
             )
-            layout.add_widget(logo)
+            content.add_widget(logo)
 
-        # --- Tagline ---
+        title = Label(
+            text="[b]About SafeSpot[/b]",
+            markup=True,
+            font_size="26sp",
+            color=(0.12, 0.08, 0.04, 1),
+            size_hint_y=None,
+            height=45,
+            halign="center",
+            valign="middle"
+        )
+        title.bind(size=title.setter("text_size"))
+        content.add_widget(title)
+
         tagline = Label(
             text="[b]Built from my own struggle.[/b]",
             markup=True,
-            font_size='18sp',
-            halign='center',
-            valign='middle',
-            color=(0.15, 0.1, 0.05, 1)
+            font_size="18sp",
+            color=(0.18, 0.12, 0.06, 1),
+            size_hint_y=None,
+            height=40,
+            halign="center",
+            valign="middle"
         )
-        tagline.bind(size=tagline.setter('text_size'))
-        layout.add_widget(tagline)
+        tagline.bind(size=tagline.setter("text_size"))
+        content.add_widget(tagline)
 
-        # --- Story text ---
         story_text = (
             "I’ve been homeless. Missed last trains. Slept cold.\n\n"
             "But I used those moments — on city benches, in dark corners — "
             "to write my books, build my games, and dream up SafeSpot.\n\n"
-            "It’s more than an app.\n"
-            "It’s a map of quiet places, trusted locations, and emergency help — "
-            "for anyone who’s ever needed safety on the go."
+            "It’s more than an app. It’s a map of quiet places, trusted "
+            "locations, and emergency help for anyone who needs safety on the go."
         )
+
         story = Label(
             text=story_text,
-            font_size='15sp',
-            halign='center',
-            valign='top',
-            color=(0.1, 0.1, 0.1, 1)
+            font_size="16sp",
+            color=(0.08, 0.08, 0.08, 1),
+            size_hint_y=None,
+            height=190,
+            halign="center",
+            valign="top"
         )
-        story.bind(size=story.setter('text_size'))
-        layout.add_widget(story)
+        story.bind(size=story.setter("text_size"))
+        content.add_widget(story)
 
-        # --- Divider ---
-        divider = Label(text="— — —", font_size='18sp', halign='center', color=(0.25, 0.2, 0.15, 1))
-        divider.bind(size=divider.setter('text_size'))
-        layout.add_widget(divider)
+        features_title = Label(
+            text="[b]What SafeSpot helps with[/b]",
+            markup=True,
+            font_size="18sp",
+            color=(0.12, 0.08, 0.04, 1),
+            size_hint_y=None,
+            height=40,
+            halign="center",
+            valign="middle"
+        )
+        features_title.bind(size=features_title.setter("text_size"))
+        content.add_widget(features_title)
 
-        # --- Features with icons (DOUBLE SIZE) ---
-        icons_path = "/storage/emulated/0/safespot/icons/"
-        features_data = [
-            (os.path.join(icons_path, "save_icon.png"), "Save safe spots"),
-            (os.path.join(icons_path, "comment_icon.png"), "Add real comments"),
-            (os.path.join(icons_path, "emergency_icon.png"), "Emergency contacts ready"),
-            (os.path.join(icons_path, "mind_icon.png"), "Calm design. Real impact."),
+        features = [
+            "• Save safe spots",
+            "• Add real comments",
+            "• Keep emergency contacts ready",
+            "• Simple, calm design",
+            "• Built for real-life safety"
         ]
 
-        features_box = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
-        features_box.bind(minimum_height=features_box.setter('height'))
-
-        for icon_path, text in features_data:
-            row = BoxLayout(orientation='horizontal', size_hint_y=None, height=90, spacing=18)
-            if os.path.exists(icon_path):
-                icon = Image(source=icon_path, size_hint=(None, 1), width=90, allow_stretch=True, keep_ratio=True)
-            else:
-                icon = Label(text="•", font_size='32sp', color=(0.1, 0.1, 0.1, 1), size_hint=(None, 1), width=40)
-
+        for feature in features:
             lbl = Label(
-                text=text,
-                font_size='28sp',   # doubled from 15sp → 28sp
-                halign='left',
-                valign='middle',
-                color=(0.1, 0.1, 0.1, 1)
+                text=feature,
+                font_size="16sp",
+                color=(0.08, 0.08, 0.08, 1),
+                size_hint_y=None,
+                height=34,
+                halign="left",
+                valign="middle"
             )
-            lbl.bind(size=lbl.setter('text_size'))
-            row.add_widget(icon)
-            row.add_widget(lbl)
-            features_box.add_widget(row)
+            lbl.bind(size=lbl.setter("text_size"))
+            content.add_widget(lbl)
 
-        layout.add_widget(features_box)
+        scroll.add_widget(content)
+        root.add_widget(scroll)
 
-        # --- Buttons ---
         privacy_btn = Button(
-            text='View Privacy Policy',
-            size_hint=(1, 0.12),
+            text="View Privacy Policy",
+            size_hint_y=None,
+            height=52,
             background_color=(0.35, 0.25, 0.15, 1),
             color=(1, 1, 1, 1),
-            font_size='15sp'
+            font_size="16sp"
         )
         privacy_btn.bind(on_release=self.show_privacy_policy)
-        layout.add_widget(privacy_btn)
+        root.add_widget(privacy_btn)
 
         back_btn = Button(
-            text='Back to Home',
-            size_hint=(1, 0.12),
+            text="Back to Home",
+            size_hint_y=None,
+            height=52,
             background_color=(0.25, 0.15, 0.1, 1),
             color=(1, 1, 1, 1),
-            font_size='15sp'
+            font_size="16sp"
         )
-        back_btn.bind(on_release=lambda x: setattr(self.manager, 'current', 'home'))
-        layout.add_widget(back_btn)
+        back_btn.bind(on_release=lambda x: setattr(self.manager, "current", "home"))
+        root.add_widget(back_btn)
 
-        self.add_widget(layout)
+        self.add_widget(root)
 
     def _update_bg(self, *args):
         self.bg_rect.pos = self.pos
         self.bg_rect.size = self.size
 
-    # --- Privacy Policy popup ---
     def show_privacy_policy(self, instance):
-        content = (
+        content_text = (
             "[b]Privacy Policy[/b]\n\n"
-            "SafeSpot respects your privacy and your trust means everything to us.\n\n"
-            "• Your data is securely stored in Google Firebase.\n"
-            "• No personal information is shared with third parties.\n"
-            "• Location data is used only to show nearby safe spots.\n"
-            "• You can delete your data at any time.\n\n"
+            "SafeSpot respects your privacy.\n\n"
+            "• Your data may be stored securely in Google Firebase.\n"
+            "• No personal information is sold to third parties.\n"
+            "• Location data is used only to show or save safe spots.\n"
+            "• You can request deletion of your data.\n\n"
             "SafeSpot was created to protect — not to collect."
         )
 
-        label = Label(
-            text=content,
-            markup=True,
-            font_size='15sp',
-            halign='left',
-            valign='top',
-            color=(0.1, 0.1, 0.1, 1)
+        box = BoxLayout(
+            orientation="vertical",
+            padding=18,
+            spacing=12
         )
-        label.bind(size=label.setter('text_size'))
+
+        label = Label(
+            text=content_text,
+            markup=True,
+            font_size="15sp",
+            color=(0.08, 0.08, 0.08, 1),
+            halign="left",
+            valign="top"
+        )
+        label.bind(size=label.setter("text_size"))
 
         close_btn = Button(
             text="Close",
-            size_hint=(1, 0.18),
+            size_hint_y=None,
+            height=50,
             background_color=(0.35, 0.25, 0.15, 1),
             color=(1, 1, 1, 1),
-            font_size='15sp'
+            font_size="15sp"
         )
 
-        box = BoxLayout(orientation='vertical', padding=20, spacing=15)
         box.add_widget(label)
         box.add_widget(close_btn)
 
         popup = Popup(
             title="Privacy Policy",
             content=box,
-            size_hint=(0.9, 0.75),
-            background_color=(1, 0.98, 0.94, 1),
-            title_color=(0.15, 0.1, 0.05, 1),
-            separator_color=(0.35, 0.25, 0.15, 1)
+            size_hint=(0.9, 0.75)
         )
 
         close_btn.bind(on_release=popup.dismiss)
