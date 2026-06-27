@@ -8,7 +8,7 @@ package.domain = com.bradleycorbettjones
 source.dir = .
 
 source.include_exts = py,kv,png,jpg,jpeg,json,txt,atlas
-source.include_patterns = .py,.json,.png,.jpg,.jpeg,assets/
+source.include_patterns = *.py,*.json,*.png,*.jpg,*.jpeg,assets/*
 
 version = 1.0
 
@@ -39,6 +39,7 @@ p4a.branch = v2024.01.21
 log_level = 2
 
 warn_on_root = 0
+
 
 [buildozer]
 
