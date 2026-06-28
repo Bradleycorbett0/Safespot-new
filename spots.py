@@ -8,7 +8,7 @@ import requests
 import webbrowser
 
 # ✅ Firebase base path
-BASE_URL = "https://safespot-c5e02-default-rtdb.europe-west1.firebasedatabase.app/spots"
+BASE_URL = "https://safespot-4f250-default-rtdb.europe-west1.firebasedatabase.app/spots"
 
 
 class SpotsScreen(Screen):
