@@ -21,11 +21,7 @@ class AddSpotScreen(Screen):
 
         Window.softinput_mode = "resize"
 
-        layout = BoxLayout(
-            orientation="vertical",
-            padding=10,
-            spacing=10
-        )
+        layout = BoxLayout(orientation="vertical", padding=10, spacing=10)
 
         scroll = ScrollView(size_hint=(1, 1))
 
@@ -123,11 +119,11 @@ class AddSpotScreen(Screen):
     def safe_key(self, text):
         text = text.lower().strip()
         text = re.sub(r"[^a-z0-9]+", "_", text)
-        return text.strip("_")
+        text = text.strip("_")
+        return text or "unnamed"
 
     def save_spot(self, instance):
-
-        city = self.city_spinner.text
+        city = self.city_spinner.text.strip()
         name = self.name_input.text.strip()
         desc = self.desc_input.text.strip()
 
@@ -148,18 +144,30 @@ class AddSpotScreen(Screen):
 
         data = {
             "city": city,
+            "city_key": city_key,
+            "spot_key": spot_key,
             "name": name,
             "description": desc,
             "location": f"{name}, {city}"
         }
 
         try:
-            result = save_data(
-                f"spots/{city_key}/{spot_key}",
-                data
-            )
+            result = save_data(f"spots/{city_key}/{spot_key}", data)
 
-            if result is not None:
+            if isinstance(result, dict) and result.get("success") is True:
+                self.show_popup("✅ Spot saved successfully!")
+
+                self.city_spinner.text = "Select a City"
+                self.name_input.text = ""
+                self.desc_input.text = ""
+
+            elif isinstance(result, dict) and result.get("success") is False:
+                self.show_popup(
+                    "❌ Firebase error:\n\n"
+                    f"{result.get('error', 'Unknown error')}"
+                )
+
+            elif result is not None:
                 self.show_popup("✅ Spot saved successfully!")
 
                 self.city_spinner.text = "Select a City"
@@ -169,19 +177,23 @@ class AddSpotScreen(Screen):
             else:
                 self.show_popup(
                     "❌ Failed to save to Firebase.\n\n"
-                    "Check your Firebase rules."
+                    "No response returned from firebase_config.py"
                 )
 
         except Exception:
             self.show_popup(traceback.format_exc())
 
     def show_popup(self, message):
+        label = Label(
+            text=message,
+            halign="center",
+            valign="middle",
+            font_size="15sp"
+        )
+        label.bind(size=label.setter("text_size"))
+
         Popup(
             title="SafeSpot",
-            content=Label(
-                text=message,
-                halign="center",
-                valign="middle"
-            ),
-            size_hint=(0.85, 0.4)
+            content=label,
+            size_hint=(0.9, 0.45)
         ).open()
