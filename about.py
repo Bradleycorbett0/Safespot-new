@@ -77,11 +77,23 @@ class AboutScreen(Screen):
         content.add_widget(tagline)
 
         story_text = (
-            "I’ve been homeless. Missed last trains. Slept cold.\n\n"
-            "But I used those moments — on city benches, in dark corners — "
-            "to write my books, build my games, and dream up SafeSpot.\n\n"
+            "Built from my own struggle.[/B]\n\n"
+            "But I used those moments — on city benches,and in dark corners — "
+            "to write my books, dream of building my games, and dream up SafeSpot.\n\n"
             "It’s more than an app. It’s a map of quiet places, trusted "
             "locations, and emergency help for anyone who needs safety on the go."
+     — whether you’re "
+    "a traveller, in crisis, or just need a breather.\n\n"
+    "✓ Save spots\n"
+    "✓ Add real-life comments\n"
+    "✓ Emergency contacts ready\n"
+    "✓ Calm design. Real impact.\n\n"
+    "[b]Download SafeSpot now[/b] — because sometimes one safe space is "
+    "all it takes to change everything.\n\n"
+    "#SafeSpotApp #BuiltFromSurvival #HomelessToHope\n"
+    "#FindYourSafeSpot #SafeSpacesMatter #MentalHealth\n"
+    "#EmergencyHelp #UrbanSafety #SurvivorMade"
+        )
         )
 
         story = Label(
