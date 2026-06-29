@@ -44,7 +44,7 @@ class AboutScreen(Screen):
             logo = Image(
                 source=logo_path,
                 size_hint_y=None,
-                height=130,
+                height=120,
                 allow_stretch=True,
                 keep_ratio=True
             )
@@ -63,84 +63,38 @@ class AboutScreen(Screen):
         title.bind(size=title.setter("text_size"))
         content.add_widget(title)
 
-        tagline = Label(
-            text="[b]Built from my own struggle.[/b]",
-            markup=True,
-            font_size="18sp",
-            color=(0.18, 0.12, 0.06, 1),
-            size_hint_y=None,
-            height=40,
-            halign="center",
-            valign="middle"
-        )
-        tagline.bind(size=tagline.setter("text_size"))
-        content.add_widget(tagline)
-
         story_text = (
-            "Built from my own struggle.[/B]\n\n"
-            "But I used those moments — on city benches,and in dark corners — "
-            "to write my books, dream of building my games, and dream up SafeSpot.\n\n"
-            "It’s more than an app. It’s a map of quiet places, trusted "
-            "locations, and emergency help for anyone who needs safety on the go."
-     — whether you’re "
-    "a traveller, in crisis, or just need a breather.\n\n"
-    "✓ Save spots\n"
-    "✓ Add real-life comments\n"
-    "✓ Emergency contacts ready\n"
-    "✓ Calm design. Real impact.\n\n"
-    "[b]Download SafeSpot now[/b] — because sometimes one safe space is "
-    "all it takes to change everything.\n\n"
-    "#SafeSpotApp #BuiltFromSurvival #HomelessToHope\n"
-    "#FindYourSafeSpot #SafeSpacesMatter #MentalHealth\n"
-    "#EmergencyHelp #UrbanSafety #SurvivorMade"
-        )
+            "[b]Built from my own struggle.[/b]\n\n"
+            "I’ve been homeless. Missed last trains. Slept cold.\n\n"
+            "But I used those moments — on city benches, in dark corners — "
+            "to write my books, build my games, and dream up SafeSpot.\n\n"
+            "[b]It’s more than an app.[/b]\n\n"
+            "It’s a map of quiet places, trusted locations, and emergency help, "
+            "built for anyone who’s ever needed safety on the go — whether you’re "
+            "a traveller, in crisis, or just need a breather.\n\n"
+            "✓ Save spots\n"
+            "✓ Add real-life comments\n"
+            "✓ Emergency contacts ready\n"
+            "✓ Calm design. Real impact.\n\n"
+            "[b]Download SafeSpot now[/b] — because sometimes one safe space is "
+            "all it takes to change everything.\n\n"
+            "#SafeSpotApp #BuiltFromSurvival #HomelessToHope\n"
+            "#FindYourSafeSpot #SafeSpacesMatter #MentalHealth\n"
+            "#EmergencyHelp #UrbanSafety #SurvivorMade"
         )
 
         story = Label(
             text=story_text,
-            font_size="16sp",
+            markup=True,
+            font_size="15sp",
             color=(0.08, 0.08, 0.08, 1),
             size_hint_y=None,
-            height=190,
+            height=620,
             halign="center",
             valign="top"
         )
         story.bind(size=story.setter("text_size"))
         content.add_widget(story)
-
-        features_title = Label(
-            text="[b]What SafeSpot helps with[/b]",
-            markup=True,
-            font_size="18sp",
-            color=(0.12, 0.08, 0.04, 1),
-            size_hint_y=None,
-            height=40,
-            halign="center",
-            valign="middle"
-        )
-        features_title.bind(size=features_title.setter("text_size"))
-        content.add_widget(features_title)
-
-        features = [
-            "• Save safe spots",
-            "• Add real comments",
-            "• Keep emergency contacts ready",
-            "• Simple, calm design",
-            "• Built for real-life safety"
-        ]
-
-        for feature in features:
-            lbl = Label(
-                text=feature,
-                font_size="16sp",
-                color=(0.08, 0.08, 0.08, 1),
-                size_hint_y=None,
-                height=34,
-                halign="left",
-                valign="middle"
-            )
-            lbl.bind(size=lbl.setter("text_size"))
-            content.add_widget(lbl)
 
         scroll.add_widget(content)
         root.add_widget(scroll)
