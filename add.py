@@ -88,7 +88,7 @@ class AddSpotScreen(Screen):
             multiline=True,
             size_hint_y=None,
             height=260,
-            font_size="21sp",
+            font_size="18sp",
             padding=[12, 18, 12, 12],
             foreground_color=(0, 0, 0, 1),
             hint_text_color=(0.45, 0.45, 0.45, 1),
