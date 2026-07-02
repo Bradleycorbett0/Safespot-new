@@ -56,7 +56,7 @@ class AboutScreen(Screen):
             font_size="26sp",
             color=(0.12, 0.08, 0.04, 1),
             size_hint_y=None,
-            height=45,
+            height=50,
             halign="center",
             valign="middle"
         )
@@ -65,19 +65,30 @@ class AboutScreen(Screen):
 
         story_text = (
             "[b]Built from my own struggle.[/b]\n\n"
-            "I’ve been homeless. Missed last trains. Slept cold.\n\n"
-            "But I used those moments — on city benches, in dark corners — "
-            "to write my books, build my games, and dream up SafeSpot.\n\n"
-            "[b]It’s more than an app.[/b]\n\n"
-            "It’s a map of quiet places, trusted locations, and emergency help, "
-            "built for anyone who’s ever needed safety on the go — whether you’re "
-            "a traveller, in crisis, or just need a breather.\n\n"
-            "✓ Save spots\n"
-            "✓ Add real-life comments\n"
-            "✓ Emergency contacts ready\n"
-            "✓ Calm design. Real impact.\n\n"
-            "[b]Download SafeSpot now[/b] — because sometimes one safe space is "
-            "all it takes to change everything.\n\n"
+            "I’ve experienced homelessness, missed the last train, "
+            "and spent nights sleeping outside.\n\n"
+            "Those moments were hard, but they inspired me to create "
+            "SafeSpot — a free app built to help people find safer places "
+            "when they need them most.\n\n"
+            "[b]SafeSpot is here to help people feel less alone.[/b]\n\n"
+            "Whether someone is homeless, stuck after missing transport, "
+            "feeling unsafe, struggling with their mental health, or simply "
+            "needs somewhere calm to stop for a while, SafeSpot is designed "
+            "to point them towards trusted spaces and emergency help.\n\n"
+            "[b]What you can do with SafeSpot:[/b]\n\n"
+            "✓ Find trusted safe places\n"
+            "✓ Save your favourite locations\n"
+            "✓ Read community comments\n"
+            "✓ Add useful local spots\n"
+            "✓ Access one-tap emergency contacts\n"
+            "✓ Use a calm, simple design when under pressure\n\n"
+            "[b]Why I built it[/b]\n\n"
+            "When you are outside with nowhere safe to go, even one trusted "
+            "place can make a difference. SafeSpot was created from real-life "
+            "experience, not just an idea.\n\n"
+            "This app is for people who need safety, support, direction, "
+            "or a moment to breathe.\n\n"
+            "[b]SafeSpot[/b] — built from survival, made to help others.\n\n"
             "#SafeSpotApp #BuiltFromSurvival #HomelessToHope\n"
             "#FindYourSafeSpot #SafeSpacesMatter #MentalHealth\n"
             "#EmergencyHelp #UrbanSafety #SurvivorMade"
@@ -89,14 +100,21 @@ class AboutScreen(Screen):
             font_size="15sp",
             color=(0.08, 0.08, 0.08, 1),
             size_hint_y=None,
-            height=620,
             halign="center",
             valign="top"
         )
-        story.bind(size=story.setter("text_size"))
+        story.bind(
+            width=lambda instance, width: setattr(
+                instance, "text_size", (width, None)
+            )
+        )
+        story.bind(
+            texture_size=lambda instance, size: setattr(
+                instance, "height", size[1] + 20
+            )
+        )
         content.add_widget(story)
-
-        scroll.add_widget(content)
+                 scroll.add_widget(content)
         root.add_widget(scroll)
 
         privacy_btn = Button(
@@ -149,10 +167,20 @@ class AboutScreen(Screen):
             markup=True,
             font_size="15sp",
             color=(0.08, 0.08, 0.08, 1),
+            size_hint_y=None,
             halign="left",
             valign="top"
         )
-        label.bind(size=label.setter("text_size"))
+        label.bind(
+            width=lambda instance, width: setattr(
+                instance, "text_size", (width, None)
+            )
+        )
+        label.bind(
+            texture_size=lambda instance, size: setattr(
+                instance, "height", size[1] + 20
+            )
+        )
 
         close_btn = Button(
             text="Close",
@@ -169,7 +197,7 @@ class AboutScreen(Screen):
         popup = Popup(
             title="Privacy Policy",
             content=box,
-            size_hint=(0.9, 0.75)
+            size_hint=(0.9, 0.7)
         )
 
         close_btn.bind(on_release=popup.dismiss)
