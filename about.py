@@ -114,7 +114,7 @@ class AboutScreen(Screen):
             )
         )
         content.add_widget(story)
-                 scroll.add_widget(content)
+        scroll.add_widget(content)
         root.add_widget(scroll)
 
         privacy_btn = Button(
