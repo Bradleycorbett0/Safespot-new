@@ -10,7 +10,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, Rectangle
 
-FIREBASE_URL = "https://safespot-c5e02-default-rtdb.europe-west1.firebasedatabase.app"
+FIREBASE_URL = "https://safespot-4f250-default-rtdb.europe-west1.firebasedatabase.app"
 
 
 class EventsScreen(Screen):
