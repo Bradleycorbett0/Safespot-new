@@ -30,18 +30,16 @@ class EmergencyContactsScreen(Screen):
         self.load_contacts()
 
     def load_contacts(self):
-
         self.clear_widgets()
 
         scroll = ScrollView(size_hint=(1, 1))
 
         layout = BoxLayout(
             orientation="vertical",
-            padding=20,
-            spacing=14,
+            padding=[18, 18, 18, 18],
+            spacing=16,
             size_hint_y=None
         )
-
         layout.bind(minimum_height=layout.setter("height"))
 
         title = Label(
@@ -49,115 +47,106 @@ class EmergencyContactsScreen(Screen):
             markup=True,
             font_size="28sp",
             size_hint_y=None,
-            height=60,
-            color=(0.1, 0.1, 0.1, 1)
+            height=65,
+            color=(0.1, 0.1, 0.1, 1),
+            halign="center",
+            valign="middle"
         )
-
+        title.bind(size=title.setter("text_size"))
         layout.add_widget(title)
 
         intro = Label(
             text="If you're in danger or need support, choose one of the services below.",
             size_hint_y=None,
-            height=70,
+            height=85,
             font_size="17sp",
             halign="center",
             valign="middle",
             color=(0.2, 0.2, 0.2, 1)
         )
         intro.bind(size=intro.setter("text_size"))
-
         layout.add_widget(intro)
 
         try:
-
-            response = requests.get(
-                f"{FIREBASE_URL}/emergency.json",
-                timeout=15
-            )
+            response = requests.get(f"{FIREBASE_URL}/emergency.json", timeout=15)
 
             if response.status_code == 200 and response.json():
-
                 data = response.json()
 
                 for key, contact in data.items():
-
                     name = contact.get("name", "")
                     phone = contact.get("phone", "")
                     note = contact.get("note", "")
 
-                    text = f"{name}\n{phone}"
-
+                    text = f"[b]{name}[/b]\n{phone}"
                     if note:
                         text += f"\n{note}"
 
                     btn = Button(
                         text=text,
+                        markup=True,
                         size_hint_y=None,
-                        height=110,
+                        height=130,
                         font_size="17sp",
-                        background_color=(0.35, 0.35, 0.35, 1),
-                        color=(1, 1, 1, 1)
+                        background_color=(0.18, 0.18, 0.18, 1),
+                        color=(1, 1, 1, 1),
+                        halign="center",
+                        valign="middle"
                     )
+                    btn.text_size = (680, None)
 
                     btn.bind(
-                        on_press=lambda instance, value=phone:
-                        self.open_contact(value)
+                        on_press=lambda instance, value=phone: self.open_contact(value)
                     )
-
                     layout.add_widget(btn)
 
             else:
-
-                layout.add_widget(
-                    Label(
-                        text="No emergency contacts available.",
-                        size_hint_y=None,
-                        height=60
-                    )
-                )
+                layout.add_widget(self.message_label("No emergency contacts available."))
 
         except Exception as e:
-
-            layout.add_widget(
-                Label(
-                    text=f"Error loading contacts\n{e}",
-                    size_hint_y=None,
-                    height=80
-                )
-            )
+            layout.add_widget(self.message_label(f"Error loading contacts\n{e}"))
 
         warning = Label(
             text="[b]In an emergency always call 999 immediately.[/b]",
             markup=True,
             size_hint_y=None,
-            height=60,
-            color=(0.6, 0, 0, 1)
+            height=70,
+            font_size="17sp",
+            color=(0.6, 0, 0, 1),
+            halign="center",
+            valign="middle"
         )
-
+        warning.bind(size=warning.setter("text_size"))
         layout.add_widget(warning)
 
         back_btn = Button(
             text="Back to Home",
             size_hint_y=None,
-            height=65,
-            font_size="18sp",
+            height=70,
+            font_size="20sp",
             background_color=(0.25, 0.15, 0.1, 1),
             color=(1, 1, 1, 1)
         )
-
-        back_btn.bind(
-            on_press=lambda x:
-            setattr(self.manager, "current", "home")
-        )
-
+        back_btn.bind(on_press=lambda x: setattr(self.manager, "current", "home"))
         layout.add_widget(back_btn)
 
         scroll.add_widget(layout)
-
         self.add_widget(scroll)
 
-    def open_contact(self, value):
+    def message_label(self, text):
+        label = Label(
+            text=text,
+            size_hint_y=None,
+            height=80,
+            font_size="17sp",
+            color=(0.1, 0.1, 0.1, 1),
+            halign="center",
+            valign="middle"
+        )
+        label.bind(size=label.setter("text_size"))
+        return label
 
+    def open_contact(self, value):
         if value.startswith("http"):
             webbrowser.open(value)
         else:
