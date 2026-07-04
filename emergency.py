@@ -46,7 +46,7 @@ class EmergencyContactsScreen(Screen):
             markup=True,
             font_size="24sp",
             size_hint_y=None,
-            height=55,
+            height=65,
             color=(0.1, 0.1, 0.1, 1),
             halign="center",
             valign="middle"
@@ -57,8 +57,8 @@ class EmergencyContactsScreen(Screen):
         intro = Label(
             text="If you are in danger or need support, choose a service below.",
             size_hint_y=None,
-            height=75,
-            font_size="15sp",
+            height=95,
+            font_size="14sp",
             halign="center",
             valign="middle",
             color=(0.2, 0.2, 0.2, 1)
@@ -83,8 +83,8 @@ class EmergencyContactsScreen(Screen):
                     card = BoxLayout(
                         orientation="vertical",
                         size_hint_y=None,
-                        height=165,
-                        padding=[10, 8, 10, 8],
+                        height=175,
+                        padding=[10, 10, 10, 10],
                         spacing=8
                     )
 
@@ -94,7 +94,7 @@ class EmergencyContactsScreen(Screen):
                         font_size="18sp",
                         color=(0.05, 0.05, 0.05, 1),
                         size_hint_y=None,
-                        height=35,
+                        height=40,
                         halign="center",
                         valign="middle"
                     )
@@ -106,10 +106,10 @@ class EmergencyContactsScreen(Screen):
 
                     detail_lbl = Label(
                         text=detail,
-                        font_size="15sp",
+                        font_size="14sp",
                         color=(0.12, 0.12, 0.12, 1),
                         size_hint_y=None,
-                        height=60,
+                        height=65,
                         halign="center",
                         valign="middle"
                     )
@@ -142,8 +142,8 @@ class EmergencyContactsScreen(Screen):
             text="[b]In an emergency, always call 999 immediately.[/b]",
             markup=True,
             size_hint_y=None,
-            height=65,
-            font_size="15sp",
+            height=75,
+            font_size="14sp",
             color=(0.6, 0, 0, 1),
             halign="center",
             valign="middle"
@@ -169,8 +169,8 @@ class EmergencyContactsScreen(Screen):
         label = Label(
             text=text,
             size_hint_y=None,
-            height=80,
-            font_size="16sp",
+            height=90,
+            font_size="15sp",
             color=(0.1, 0.1, 0.1, 1),
             halign="center",
             valign="middle"
