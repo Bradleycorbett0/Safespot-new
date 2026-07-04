@@ -12,7 +12,6 @@ FIREBASE_URL = "https://safespot-4f250-default-rtdb.europe-west1.firebasedatabas
 
 
 class EmergencyContactsScreen(Screen):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -36,8 +35,8 @@ class EmergencyContactsScreen(Screen):
 
         layout = BoxLayout(
             orientation="vertical",
-            padding=[18, 18, 18, 18],
-            spacing=16,
+            padding=[18, 14, 18, 18],
+            spacing=12,
             size_hint_y=None
         )
         layout.bind(minimum_height=layout.setter("height"))
@@ -45,9 +44,9 @@ class EmergencyContactsScreen(Screen):
         title = Label(
             text="[b]Emergency Help[/b]",
             markup=True,
-            font_size="28sp",
+            font_size="26sp",
             size_hint_y=None,
-            height=65,
+            height=55,
             color=(0.1, 0.1, 0.1, 1),
             halign="center",
             valign="middle"
@@ -56,10 +55,10 @@ class EmergencyContactsScreen(Screen):
         layout.add_widget(title)
 
         intro = Label(
-            text="If you're in danger or need support, choose one of the services below.",
+            text="If you are in danger or need support, choose a service below.",
             size_hint_y=None,
-            height=85,
-            font_size="17sp",
+            height=65,
+            font_size="16sp",
             halign="center",
             valign="middle",
             color=(0.2, 0.2, 0.2, 1)
@@ -74,31 +73,64 @@ class EmergencyContactsScreen(Screen):
                 data = response.json()
 
                 for key, contact in data.items():
-                    name = contact.get("name", "")
+                    if not isinstance(contact, dict):
+                        continue
+
+                    name = contact.get("name", "Emergency Contact")
                     phone = contact.get("phone", "")
                     note = contact.get("note", "")
 
-                    text = f"[b]{name}[/b]\n{phone}"
-                    if note:
-                        text += f"\n{note}"
-
-                    btn = Button(
-                        text=text,
-                        markup=True,
+                    card = BoxLayout(
+                        orientation="vertical",
                         size_hint_y=None,
-                        height=130,
-                        font_size="17sp",
-                        background_color=(0.18, 0.18, 0.18, 1),
-                        color=(1, 1, 1, 1),
+                        height=118,
+                        padding=[10, 8, 10, 8],
+                        spacing=4
+                    )
+
+                    title_lbl = Label(
+                        text=f"[b]{name}[/b]",
+                        markup=True,
+                        font_size="18sp",
+                        color=(0.05, 0.05, 0.05, 1),
+                        size_hint_y=None,
+                        height=28,
                         halign="center",
                         valign="middle"
                     )
-                    btn.text_size = (680, None)
+                    title_lbl.bind(size=title_lbl.setter("text_size"))
 
-                    btn.bind(
+                    detail_text = phone
+                    if note:
+                        detail_text += f"\n{note}"
+
+                    detail_lbl = Label(
+                        text=detail_text,
+                        font_size="14sp",
+                        color=(0.15, 0.15, 0.15, 1),
+                        size_hint_y=None,
+                        height=42,
+                        halign="center",
+                        valign="middle"
+                    )
+                    detail_lbl.bind(size=detail_lbl.setter("text_size"))
+
+                    action_btn = Button(
+                        text="Open Website" if phone.startswith("http") else f"Call {phone}",
+                        size_hint_y=None,
+                        height=38,
+                        font_size="15sp",
+                        background_color=(0.18, 0.18, 0.18, 1),
+                        color=(1, 1, 1, 1)
+                    )
+                    action_btn.bind(
                         on_press=lambda instance, value=phone: self.open_contact(value)
                     )
-                    layout.add_widget(btn)
+
+                    card.add_widget(title_lbl)
+                    card.add_widget(detail_lbl)
+                    card.add_widget(action_btn)
+                    layout.add_widget(card)
 
             else:
                 layout.add_widget(self.message_label("No emergency contacts available."))
@@ -107,11 +139,11 @@ class EmergencyContactsScreen(Screen):
             layout.add_widget(self.message_label(f"Error loading contacts\n{e}"))
 
         warning = Label(
-            text="[b]In an emergency always call 999 immediately.[/b]",
+            text="[b]In an emergency, always call 999 immediately.[/b]",
             markup=True,
             size_hint_y=None,
-            height=70,
-            font_size="17sp",
+            height=55,
+            font_size="15sp",
             color=(0.6, 0, 0, 1),
             halign="center",
             valign="middle"
@@ -122,8 +154,8 @@ class EmergencyContactsScreen(Screen):
         back_btn = Button(
             text="Back to Home",
             size_hint_y=None,
-            height=70,
-            font_size="20sp",
+            height=60,
+            font_size="18sp",
             background_color=(0.25, 0.15, 0.1, 1),
             color=(1, 1, 1, 1)
         )
@@ -138,7 +170,7 @@ class EmergencyContactsScreen(Screen):
             text=text,
             size_hint_y=None,
             height=80,
-            font_size="17sp",
+            font_size="16sp",
             color=(0.1, 0.1, 0.1, 1),
             halign="center",
             valign="middle"
