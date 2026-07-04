@@ -36,7 +36,7 @@ class EmergencyContactsScreen(Screen):
         layout = BoxLayout(
             orientation="vertical",
             padding=[18, 14, 18, 18],
-            spacing=12,
+            spacing=18,
             size_hint_y=None
         )
         layout.bind(minimum_height=layout.setter("height"))
@@ -44,7 +44,7 @@ class EmergencyContactsScreen(Screen):
         title = Label(
             text="[b]Emergency Help[/b]",
             markup=True,
-            font_size="26sp",
+            font_size="24sp",
             size_hint_y=None,
             height=55,
             color=(0.1, 0.1, 0.1, 1),
@@ -57,8 +57,8 @@ class EmergencyContactsScreen(Screen):
         intro = Label(
             text="If you are in danger or need support, choose a service below.",
             size_hint_y=None,
-            height=65,
-            font_size="16sp",
+            height=75,
+            font_size="15sp",
             halign="center",
             valign="middle",
             color=(0.2, 0.2, 0.2, 1)
@@ -83,33 +83,33 @@ class EmergencyContactsScreen(Screen):
                     card = BoxLayout(
                         orientation="vertical",
                         size_hint_y=None,
-                        height=118,
+                        height=165,
                         padding=[10, 8, 10, 8],
-                        spacing=4
+                        spacing=8
                     )
 
-                    title_lbl = Label(
+                    name_lbl = Label(
                         text=f"[b]{name}[/b]",
                         markup=True,
                         font_size="18sp",
                         color=(0.05, 0.05, 0.05, 1),
                         size_hint_y=None,
-                        height=28,
+                        height=35,
                         halign="center",
                         valign="middle"
                     )
-                    title_lbl.bind(size=title_lbl.setter("text_size"))
+                    name_lbl.bind(size=name_lbl.setter("text_size"))
 
-                    detail_text = phone
+                    detail = phone
                     if note:
-                        detail_text += f"\n{note}"
+                        detail += f"\n{note}"
 
                     detail_lbl = Label(
-                        text=detail_text,
-                        font_size="14sp",
-                        color=(0.15, 0.15, 0.15, 1),
+                        text=detail,
+                        font_size="15sp",
+                        color=(0.12, 0.12, 0.12, 1),
                         size_hint_y=None,
-                        height=42,
+                        height=60,
                         halign="center",
                         valign="middle"
                     )
@@ -118,8 +118,8 @@ class EmergencyContactsScreen(Screen):
                     action_btn = Button(
                         text="Open Website" if phone.startswith("http") else f"Call {phone}",
                         size_hint_y=None,
-                        height=38,
-                        font_size="15sp",
+                        height=45,
+                        font_size="16sp",
                         background_color=(0.18, 0.18, 0.18, 1),
                         color=(1, 1, 1, 1)
                     )
@@ -127,7 +127,7 @@ class EmergencyContactsScreen(Screen):
                         on_press=lambda instance, value=phone: self.open_contact(value)
                     )
 
-                    card.add_widget(title_lbl)
+                    card.add_widget(name_lbl)
                     card.add_widget(detail_lbl)
                     card.add_widget(action_btn)
                     layout.add_widget(card)
@@ -142,7 +142,7 @@ class EmergencyContactsScreen(Screen):
             text="[b]In an emergency, always call 999 immediately.[/b]",
             markup=True,
             size_hint_y=None,
-            height=55,
+            height=65,
             font_size="15sp",
             color=(0.6, 0, 0, 1),
             halign="center",
