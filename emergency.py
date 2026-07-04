@@ -46,7 +46,7 @@ class EmergencyContactsScreen(Screen):
             markup=True,
             font_size="26sp",
             size_hint_y=None,
-            height=65,
+            height=55,
             color=(0.1, 0.1, 0.1, 1),
             halign="center",
             valign="middle"
@@ -94,7 +94,7 @@ class EmergencyContactsScreen(Screen):
                         font_size="18sp",
                         color=(0.05, 0.05, 0.05, 1),
                         size_hint_y=None,
-                        height=65,
+                        height=28,
                         halign="center",
                         valign="middle"
                     )
@@ -109,7 +109,7 @@ class EmergencyContactsScreen(Screen):
                         font_size="14sp",
                         color=(0.15, 0.15, 0.15, 1),
                         size_hint_y=None,
-                        height=65,
+                        height=42,
                         halign="center",
                         valign="middle"
                     )
@@ -118,7 +118,7 @@ class EmergencyContactsScreen(Screen):
                     action_btn = Button(
                         text="Open Website" if phone.startswith("http") else f"Call {phone}",
                         size_hint_y=None,
-                        height=65,
+                        height=38,
                         font_size="15sp",
                         background_color=(0.18, 0.18, 0.18, 1),
                         color=(1, 1, 1, 1)
@@ -142,7 +142,7 @@ class EmergencyContactsScreen(Screen):
             text="[b]In an emergency, always call 999 immediately.[/b]",
             markup=True,
             size_hint_y=None,
-            height=65,
+            height=55,
             font_size="15sp",
             color=(0.6, 0, 0, 1),
             halign="center",
@@ -154,7 +154,7 @@ class EmergencyContactsScreen(Screen):
         back_btn = Button(
             text="Back to Home",
             size_hint_y=None,
-            height=65,
+            height=60,
             font_size="18sp",
             background_color=(0.25, 0.15, 0.1, 1),
             color=(1, 1, 1, 1)
