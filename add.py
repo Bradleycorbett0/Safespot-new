@@ -16,17 +16,24 @@ from firebase_config import save_data
 
 
 class AddSpotScreen(Screen):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         Window.softinput_mode = "resize"
 
-        layout = BoxLayout(orientation="vertical", padding=14, spacing=14)
+        layout = BoxLayout(
+            orientation="vertical",
+            padding=16,
+            spacing=16
+        )
+
         scroll = ScrollView(size_hint=(1, 1))
 
         box = BoxLayout(
             orientation="vertical",
-            padding=10,
-            spacing=14,
+            padding=12,
+            spacing=16,
             size_hint_y=None
         )
         box.bind(minimum_height=box.setter("height"))
@@ -34,10 +41,10 @@ class AddSpotScreen(Screen):
         title = Label(
             text="[b]Add a New Safe Spot[/b]",
             markup=True,
-            font_size="20sp",
+            font_size="22sp",
             color=(0, 0, 0, 1),
             size_hint_y=None,
-            height=65,
+            height=60,
             halign="center",
             valign="middle"
         )
@@ -45,17 +52,23 @@ class AddSpotScreen(Screen):
         box.add_widget(title)
 
         cities = sorted([
-            "Aberdeen", "Bangor", "Bath", "Belfast", "Birmingham", "Blackpool",
-            "Bolton", "Bournemouth", "Bradford", "Brighton", "Bristol",
-            "Cambridge", "Canterbury", "Cardiff", "Carlisle", "Chelmsford",
-            "Chester", "Colchester", "Coventry", "Derby", "Dundee", "Durham",
-            "Edinburgh", "Exeter", "Glasgow", "Gloucester", "Hereford",
-            "Inverness", "Kingston upon Hull", "Lancaster", "Leeds", "Leicester",
-            "Lincoln", "Liverpool", "London", "Luton", "Manchester",
-            "Middlesbrough", "Milton Keynes", "Newcastle", "Newport", "Norwich",
-            "Nottingham", "Oxford", "Peterborough", "Plymouth", "Portsmouth",
-            "Preston", "Reading", "Sheffield", "Southampton", "St Albans",
-            "Stoke-on-Trent", "Sunderland", "Swansea", "Truro", "Wakefield",
+            "Aberdeen", "Bangor", "Bath", "Belfast", "Birmingham",
+            "Blackpool", "Bolton", "Bournemouth", "Bradford",
+            "Brighton", "Bristol", "Cambridge", "Canterbury",
+            "Cardiff", "Carlisle", "Chelmsford", "Chester",
+            "Colchester", "Coventry", "Derby", "Dundee",
+            "Durham", "Edinburgh", "Exeter", "Glasgow",
+            "Gloucester", "Hereford", "Inverness",
+            "Kingston upon Hull", "Lancaster", "Leeds",
+            "Leicester", "Lincoln", "Liverpool", "London",
+            "Luton", "Manchester", "Middlesbrough",
+            "Milton Keynes", "Newcastle", "Newport",
+            "Norwich", "Nottingham", "Oxford",
+            "Peterborough", "Plymouth", "Portsmouth",
+            "Preston", "Reading", "Sheffield",
+            "Southampton", "St Albans",
+            "Stoke-on-Trent", "Sunderland",
+            "Swansea", "Truro", "Wakefield",
             "Wolverhampton", "Worcester", "York"
         ])
 
@@ -64,7 +77,7 @@ class AddSpotScreen(Screen):
             values=cities,
             size_hint_y=None,
             height=78,
-            font_size="24sp",
+            font_size="22sp",
             background_color=(0.35, 0.35, 0.35, 1),
             color=(1, 1, 1, 1)
         )
@@ -74,9 +87,9 @@ class AddSpotScreen(Screen):
             hint_text="Safe Spot Name",
             multiline=False,
             size_hint_y=None,
-            height=90,
-            font_size="26sp",
-            padding=[12, 24, 12, 18],
+            height=82,
+            font_size="20sp",
+            padding=[14, 22, 14, 14],
             foreground_color=(0, 0, 0, 1),
             hint_text_color=(0.45, 0.45, 0.45, 1),
             background_color=(1, 1, 1, 1)
@@ -88,8 +101,8 @@ class AddSpotScreen(Screen):
             multiline=True,
             size_hint_y=None,
             height=230,
-            font_size="22sp",
-            padding=[12, 24, 12, 18],
+            font_size="18sp",
+            padding=[14, 18, 14, 18],
             foreground_color=(0, 0, 0, 1),
             hint_text_color=(0.45, 0.45, 0.45, 1),
             background_color=(1, 1, 1, 1)
@@ -99,8 +112,8 @@ class AddSpotScreen(Screen):
         save_btn = Button(
             text="💾 Save Spot to Cloud",
             size_hint_y=None,
-            height=75,
-            font_size="22sp",
+            height=72,
+            font_size="20sp",
             background_color=(0, 0.45, 0, 1),
             color=(1, 1, 1, 1)
         )
@@ -110,27 +123,31 @@ class AddSpotScreen(Screen):
         back_btn = Button(
             text="⬅ Back to Home",
             size_hint_y=None,
-            height=75,
-            font_size="22sp",
+            height=72,
+            font_size="20sp",
             background_color=(0.45, 0, 0, 1),
             color=(1, 1, 1, 1)
         )
         back_btn.bind(
-            on_release=lambda x: setattr(App.get_running_app().root, "current", "home")
+            on_release=lambda x: setattr(
+                App.get_running_app().root,
+                "current",
+                "home"
+            )
         )
         box.add_widget(back_btn)
 
         scroll.add_widget(box)
         layout.add_widget(scroll)
         self.add_widget(layout)
-
-    def safe_key(self, text):
+            def safe_key(self, text):
         text = text.lower().strip()
         text = re.sub(r"[^a-z0-9]+", "_", text)
         text = text.strip("_")
         return text or "unnamed"
 
     def save_spot(self, instance):
+
         city = self.city_spinner.text.strip()
         name = self.name_input.text.strip()
         desc = self.desc_input.text.strip()
@@ -140,7 +157,7 @@ class AddSpotScreen(Screen):
             return
 
         if not name:
-            self.show_popup("Please enter a name.")
+            self.show_popup("Please enter a safe spot name.")
             return
 
         if not desc:
@@ -160,46 +177,60 @@ class AddSpotScreen(Screen):
         }
 
         try:
-            result = save_data(f"spots/{city_key}/{spot_key}", data)
 
-            if isinstance(result, dict) and result.get("success") is True:
-                self.show_popup("✅ Spot saved successfully!")
-                self.city_spinner.text = "Select a City"
-                self.name_input.text = ""
-                self.desc_input.text = ""
+            result = save_data(
+                f"spots/{city_key}/{spot_key}",
+                data
+            )
 
-            elif isinstance(result, dict) and result.get("success") is False:
-                self.show_popup(
-                    "❌ Firebase error:\n\n"
-                    f"{result.get('error', 'Unknown error')}"
-                )
+            if isinstance(result, dict):
+
+                if result.get("success"):
+
+                    self.show_popup("✅ Safe spot saved successfully!")
+
+                    self.city_spinner.text = "Select a City"
+                    self.name_input.text = ""
+                    self.desc_input.text = ""
+
+                else:
+
+                    self.show_popup(
+                        "❌ Firebase Error\n\n"
+                        f"{result.get('error', 'Unknown error')}"
+                    )
 
             elif result is not None:
-                self.show_popup("✅ Spot saved successfully!")
+
+                self.show_popup("✅ Safe spot saved successfully!")
+
                 self.city_spinner.text = "Select a City"
                 self.name_input.text = ""
                 self.desc_input.text = ""
 
             else:
+
                 self.show_popup(
-                    "❌ Failed to save to Firebase.\n\n"
-                    "No response returned from firebase_config.py"
+                    "❌ Failed to save the safe spot."
                 )
 
         except Exception:
             self.show_popup(traceback.format_exc())
 
     def show_popup(self, message):
+
         label = Label(
             text=message,
+            font_size="16sp",
             halign="center",
-            valign="middle",
-            font_size="16sp"
+            valign="middle"
         )
         label.bind(size=label.setter("text_size"))
 
-        Popup(
+        popup = Popup(
             title="SafeSpot",
             content=label,
-            size_hint=(0.9, 0.45)
-        ).open()
+            size_hint=(0.88, 0.42)
+        )
+
+        popup.open()
