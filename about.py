@@ -54,10 +54,10 @@ class AboutScreen(Screen):
         title = Label(
             text="[b]About SafeSpot[/b]",
             markup=True,
-            font_size="22sp",
+            font_size="26sp",
             color=(0.12, 0.08, 0.04, 1),
             size_hint_y=None,
-            height=50
+            height=45
         )
         title.bind(size=title.setter("text_size"))
         content.add_widget(title)
