@@ -38,7 +38,7 @@ class AddSpotScreen(Screen):
             font_size="18sp",
             color=(0, 0, 0, 1),
             size_hint_y=None,
-            height=65,
+            height=75,
             halign="center",
             valign="middle"
         )
