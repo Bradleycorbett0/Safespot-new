@@ -54,7 +54,7 @@ class AboutScreen(Screen):
         title = Label(
             text="[b]About SafeSpot[/b]",
             markup=True,
-            font_size="26sp",
+            font_size="22sp",
             color=(0.12, 0.08, 0.04, 1),
             size_hint_y=None,
             height=50
