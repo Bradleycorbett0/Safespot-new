@@ -35,7 +35,7 @@ class AddSpotScreen(Screen):
         title = Label(
             text="[b]Add a New Safe Spot[/b]",
             markup=True,
-            font_size="20sp",
+            font_size="18sp",
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=65,
