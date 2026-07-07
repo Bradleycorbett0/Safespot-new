@@ -28,7 +28,7 @@ class AboutScreen(Screen):
 
         content = BoxLayout(
             orientation="vertical",
-            padding=[6, 6, 6, 6],
+            padding=[6, 40, 6, 20],
             spacing=14,
             size_hint_y=None
         )
