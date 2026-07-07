@@ -1,11 +1,8 @@
-import os
-
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
 from kivy.uix.button import Button
-from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, Rectangle
 
@@ -37,20 +34,6 @@ class AboutScreen(Screen):
         )
         content.bind(minimum_height=content.setter("height"))
 
-        logo_path = "safespot_logo.png"
-        if not os.path.exists(logo_path):
-            logo_path = "logo.png"
-
-        if os.path.exists(logo_path):
-            logo = Image(
-                source=logo_path,
-                size_hint_y=None,
-                height=120,
-                allow_stretch=True,
-                keep_ratio=True
-            )
-            content.add_widget(logo)
-
         title = Label(
             text="[b]About SafeSpot[/b]",
             markup=True,
@@ -79,7 +62,7 @@ class AboutScreen(Screen):
             "✓ Save your favourite locations\n"
             "✓ Read community comments\n"
             "✓ Add useful local spots\n"
-            "✓ One-tap emergency contacts\n"
+                    "✓ One-tap emergency contacts\n"
             "✓ Calm, simple design\n\n"
 
             "[b]Why I built SafeSpot[/b]\n\n"
@@ -134,7 +117,13 @@ class AboutScreen(Screen):
             color=(1, 1, 1, 1),
             font_size="16sp"
         )
-        back_btn.bind(on_release=lambda x: setattr(self.manager, "current", "home"))
+                back_btn.bind(
+            on_release=lambda x: setattr(
+                self.manager,
+                "current",
+                "home"
+            )
+        )
         root.add_widget(back_btn)
 
         self.add_widget(root)
@@ -172,7 +161,9 @@ class AboutScreen(Screen):
             "You can request removal of content that you have added.\n\n"
 
             "[b]Disclaimer[/b]\n"
-            "SafeSpot provides community information only. Always use your own judgement and contact the emergency services if you are in immediate danger.\n\n"
+            "SafeSpot provides community information only. "
+            "Always use your own judgement and contact the emergency services "
+            "if you are in immediate danger.\n\n"
 
             "For emergencies call 999."
         )
@@ -184,8 +175,7 @@ class AboutScreen(Screen):
         )
 
         scroll = ScrollView(size_hint=(1, 1))
-
-        label = Label(
+                label = Label(
             text=content_text,
             markup=True,
             font_size="16sp",
