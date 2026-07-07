@@ -62,7 +62,7 @@ class AboutScreen(Screen):
             "✓ Save your favourite locations\n"
             "✓ Read community comments\n"
             "✓ Add useful local spots\n"
-                    "✓ One-tap emergency contacts\n"
+            "✓ One-tap emergency contacts\n"
             "✓ Calm, simple design\n\n"
 
             "[b]Why I built SafeSpot[/b]\n\n"
@@ -117,7 +117,7 @@ class AboutScreen(Screen):
             color=(1, 1, 1, 1),
             font_size="16sp"
         )
-                back_btn.bind(
+        back_btn.bind(
             on_release=lambda x: setattr(
                 self.manager,
                 "current",
@@ -175,7 +175,7 @@ class AboutScreen(Screen):
         )
 
         scroll = ScrollView(size_hint=(1, 1))
-                label = Label(
+        label = Label(
             text=content_text,
             markup=True,
             font_size="16sp",
