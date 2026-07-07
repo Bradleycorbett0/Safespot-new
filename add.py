@@ -134,7 +134,7 @@ class AddSpotScreen(Screen):
         scroll.add_widget(box)
         layout.add_widget(scroll)
         self.add_widget(layout)
-            def safe_key(self, text):
+    def safe_key(self, text):
         text = text.lower().strip()
         text = re.sub(r"[^a-z0-9]+", "_", text)
         text = text.strip("_")
