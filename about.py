@@ -4,6 +4,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
+from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle
 
 
@@ -20,7 +21,7 @@ class AboutScreen(Screen):
 
         root = BoxLayout(
             orientation="vertical",
-            padding=[18, 55, 18, 12],
+            padding=[18, 18, 18, 12],
             spacing=10
         )
 
@@ -28,11 +29,19 @@ class AboutScreen(Screen):
 
         content = BoxLayout(
             orientation="vertical",
-            padding=[6, 40, 6, 20],
+            padding=[6, 6, 6, 20],
             spacing=14,
             size_hint_y=None
         )
         content.bind(minimum_height=content.setter("height"))
+
+        # Spacer to keep title below Android status bar
+        content.add_widget(
+            Widget(
+                size_hint_y=None,
+                height=60
+            )
+        )
 
         title = Label(
             text="[b]About SafeSpot[/b]",
@@ -44,10 +53,10 @@ class AboutScreen(Screen):
         )
         title.bind(size=title.setter("text_size"))
         content.add_widget(title)
-
-        story_text = (
+                story_text = (
             "[b]Built from my own struggle.[/b]\n\n"
             "I've experienced homelessness, missed the last train and spent nights sleeping outside.\n\n"
+
             "Those experiences inspired me to create SafeSpot — a free app built to help people find safer places when they need them most.\n\n"
 
             "[b]It's more than an app.[/b]\n\n"
@@ -108,8 +117,7 @@ class AboutScreen(Screen):
         )
         privacy_btn.bind(on_release=self.show_privacy_policy)
         root.add_widget(privacy_btn)
-
-        back_btn = Button(
+                back_btn = Button(
             text="Back to Home",
             size_hint_y=None,
             height=52,
@@ -175,7 +183,7 @@ class AboutScreen(Screen):
         )
 
         scroll = ScrollView(size_hint=(1, 1))
-        label = Label(
+                label = Label(
             text=content_text,
             markup=True,
             font_size="16sp",
