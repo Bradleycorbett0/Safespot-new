@@ -20,7 +20,7 @@ class AboutScreen(Screen):
 
         root = BoxLayout(
             orientation="vertical",
-            padding=[18, 18, 18, 12],
+            padding=[18, 55, 18, 12],
             spacing=10
         )
 
