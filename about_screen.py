@@ -21,30 +21,31 @@ class AboutScreen(Screen):
 
         root = BoxLayout(
             orientation="vertical",
-            padding=[18, 0, 18, 12],
+            padding=[18, 18, 18, 12],
             spacing=10
         )
 
-        scroll = ScrollView(size_hint=(1, 1))
-
-        content = BoxLayout(
-            orientation="vertical",
-            padding=[6, 30, 6, 20],
-            spacing=14,
-            size_hint_y=None
-        )
-        content.bind(minimum_height=content.setter("height"))
-
+        # Fixed header title (NOT in scrollview)
         title = Label(
             text="[b]About SafeSpot[/b]",
             markup=True,
             font_size="26sp",
             color=(0.12, 0.08, 0.04, 1),
             size_hint_y=None,
-            height=45
+            height=50
         )
         title.bind(size=title.setter("text_size"))
-        content.add_widget(title)
+        root.add_widget(title)
+
+        scroll = ScrollView(size_hint=(1, 1))
+
+        content = BoxLayout(
+            orientation="vertical",
+            padding=[6, 6, 6, 20],
+            spacing=14,
+            size_hint_y=None
+        )
+        content.bind(minimum_height=content.setter("height"))
 
         story_text = (
             "[b]Built from my own struggle.[/b]\n\n"
