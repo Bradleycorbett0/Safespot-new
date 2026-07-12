@@ -21,7 +21,7 @@ class AboutScreen(Screen):
 
         root = BoxLayout(
             orientation="vertical",
-            padding=[18, 18, 18, 12],
+            padding=[18, 0, 18, 12],
             spacing=10
         )
 
@@ -29,19 +29,11 @@ class AboutScreen(Screen):
 
         content = BoxLayout(
             orientation="vertical",
-            padding=[6, 6, 6, 20],
+            padding=[6, 30, 6, 20],
             spacing=14,
             size_hint_y=None
         )
         content.bind(minimum_height=content.setter("height"))
-
-        # Smaller spacer for Android status bar (reduced from 60 to 20)
-        content.add_widget(
-            Widget(
-                size_hint_y=None,
-                height=20
-            )
-        )
 
         title = Label(
             text="[b]About SafeSpot[/b]",
