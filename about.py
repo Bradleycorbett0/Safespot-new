@@ -57,29 +57,21 @@ class AboutScreen(Screen):
         story_text = (
             "[b]Built from my own struggle.[/b]\n\n"
             "I've experienced homelessness, missed the last train and spent nights sleeping outside.\n\n"
-
             "Those experiences inspired me to create SafeSpot — a free app built to help people find safer places when they need them most.\n\n"
-
             "[b]It's more than an app.[/b]\n\n"
-
             "SafeSpot is a map of trusted places, quiet locations and emergency help. "
             "Whether you're homeless, travelling, stranded after missing transport, "
             "feeling unsafe or simply need somewhere calm to stop, SafeSpot is here to help.\n\n"
-
             "[b]Features[/b]\n\n"
-
             "✓ Find trusted safe places\n"
             "✓ Save your favourite locations\n"
             "✓ Read community comments\n"
             "✓ Add useful local spots\n"
             "✓ One-tap emergency contacts\n"
             "✓ Calm, simple design\n\n"
-
             "[b]Why I built SafeSpot[/b]\n\n"
-
             "When you've been in difficult situations yourself, you realise that one safe place can change everything. "
             "SafeSpot was created from real-life experience and is built to help others.\n\n"
-
             "[b]Built from survival. Made to help others.[/b]"
         )
 
@@ -146,35 +138,27 @@ class AboutScreen(Screen):
 
         content_text = (
             "[b]Privacy Policy[/b]\n\n"
-
             "SafeSpot is designed to help people find safe places and useful community information.\n\n"
-
             "[b]Information you provide[/b]\n"
             "• Safe spots you add\n"
             "• Comments you post\n"
             "• Event information you submit\n\n"
-
             "[b]How your data is used[/b]\n"
             "• To display safe locations.\n"
             "• To help other SafeSpot users.\n"
             "• To improve the app.\n\n"
-
             "[b]Storage[/b]\n"
             "Information is stored securely using Google Firebase.\n\n"
-
             "[b]We do NOT[/b]\n"
             "• Sell your personal information.\n"
             "• Share your data with advertisers.\n"
             "• Track your location without permission.\n\n"
-
             "[b]Your Choices[/b]\n"
             "You can request removal of content that you have added.\n\n"
-
             "[b]Disclaimer[/b]\n"
             "SafeSpot provides community information only. "
             "Always use your own judgement and contact the emergency services "
             "if you are in immediate danger.\n\n"
-
             "For emergencies call 999."
         )
 
