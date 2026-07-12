@@ -25,7 +25,7 @@ class AboutScreen(Screen):
             spacing=10
         )
 
-        # Fixed header title (NOT in scrollview)
+        # Fixed header title (NOT in scrollview, takes fixed height)
         title = Label(
             text="[b]About SafeSpot[/b]",
             markup=True,
@@ -37,7 +37,11 @@ class AboutScreen(Screen):
         title.bind(size=title.setter("text_size"))
         root.add_widget(title)
 
-        scroll = ScrollView(size_hint=(1, 1))
+        scroll = ScrollView(
+            size_hint=(1, 1),
+            size_hint_y=None
+        )
+        scroll.height = root.height - 50 - (52 * 2) - 40  # Account for title, buttons, and spacing
 
         content = BoxLayout(
             orientation="vertical",
