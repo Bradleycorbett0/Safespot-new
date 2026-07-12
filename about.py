@@ -53,7 +53,8 @@ class AboutScreen(Screen):
         )
         title.bind(size=title.setter("text_size"))
         content.add_widget(title)
-                story_text = (
+
+        story_text = (
             "[b]Built from my own struggle.[/b]\n\n"
             "I've experienced homelessness, missed the last train and spent nights sleeping outside.\n\n"
 
@@ -117,7 +118,8 @@ class AboutScreen(Screen):
         )
         privacy_btn.bind(on_release=self.show_privacy_policy)
         root.add_widget(privacy_btn)
-                back_btn = Button(
+
+        back_btn = Button(
             text="Back to Home",
             size_hint_y=None,
             height=52,
@@ -183,7 +185,8 @@ class AboutScreen(Screen):
         )
 
         scroll = ScrollView(size_hint=(1, 1))
-                label = Label(
+
+        label = Label(
             text=content_text,
             markup=True,
             font_size="16sp",
