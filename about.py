@@ -39,7 +39,7 @@ class AboutScreen(Screen):
         content.add_widget(
             Widget(
                 size_hint_y=None,
-                height=60
+                height=50
             )
         )
 
