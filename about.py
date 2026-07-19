@@ -47,13 +47,13 @@ class AboutScreen(Screen):
         )
         content.bind(minimum_height=content.setter("height"))
         # Top spacer so the title isn't hidden behind the status bar
-content.add_widget(
-    Label(
-        size_hint_y=None,
-        height=45,
-        text=""
-    )
-)
+        content.add_widget(
+            Label(
+                size_hint_y=None,
+                height=45,
+                text=""
+            )
+        )
 
         story_text = (
             "[b]Built from my own struggle.[/b]\n\n"
