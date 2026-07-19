@@ -25,9 +25,6 @@ class AboutScreen(Screen):
             spacing=10
         )
 
-        # Fixed header title (NOT in scrollview, takes fixed height)
-        title = Label(
-            text="[b]About SafeSpot[/b]",
             markup=True,
             font_size="26sp",
             color=(0.12, 0.08, 0.04, 1),
