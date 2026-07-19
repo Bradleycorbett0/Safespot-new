@@ -25,6 +25,7 @@ class AboutScreen(Screen):
             spacing=10
         )
 
+        title = Label(
             markup=True,
             font_size="26sp",
             color=(0.12, 0.08, 0.04, 1),
