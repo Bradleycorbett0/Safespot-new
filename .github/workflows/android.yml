@@ -60,8 +60,9 @@ jobs:
         run: |
           buildozer android release
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: SafeSpot-APK
-          path: bin/*.apk
+      - name: Upload AAB
+  uses: actions/upload-artifact@v4
+  with:
+    name: SafeSpot-AAB
+    path: bin/*.aab
+    if-no-files-found: error
