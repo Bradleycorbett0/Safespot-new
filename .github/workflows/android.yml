@@ -1,4 +1,4 @@
-name: Build SafeSpot APK
+name: Build SafeSpot Google Play AAB
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
       - name: Install Linux packages
         run: |
@@ -56,7 +56,7 @@ jobs:
           grep -n "requirements" buildozer.spec || true
           grep -n "p4a.branch" buildozer.spec || true
 
-            - name: Build release AAB
+      - name: Build release AAB
         run: |
           buildozer android release
 
