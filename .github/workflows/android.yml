@@ -56,13 +56,13 @@ jobs:
           grep -n "requirements" buildozer.spec || true
           grep -n "p4a.branch" buildozer.spec || true
 
-      - name: Build release AAB
+            - name: Build release AAB
         run: |
           buildozer android release
 
       - name: Upload AAB
-  uses: actions/upload-artifact@v4
-  with:
-    name: SafeSpot-AAB
-    path: bin/*.aab
-    if-no-files-found: error
+        uses: actions/upload-artifact@v4
+        with:
+          name: SafeSpot-AAB
+          path: bin/*.aab
+          if-no-files-found: error
