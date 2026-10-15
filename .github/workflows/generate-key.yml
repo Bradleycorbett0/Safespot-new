@@ -1,0 +1,43 @@
+name: Generate SafeSpot Signing Key
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-key:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Generate signing keystore
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_PASSWORD"
+          test -n "$KEY_ALIAS"
+
+          keytool -genkeypair \
+            -v \
+            -keystore safespot-release.jks \
+            -alias "$KEY_ALIAS" \
+            -keyalg RSA \
+            -keysize 3072 \
+            -validity 10000 \
+            -storepass "$STORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -dname "CN=SafeSpot, OU=Mobile, O=SafeSpot, L=Liverpool, C=GB"
+
+      - name: Upload signing keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: SafeSpot-Signing-Key
+          path: safespot-release.jks
+          retention-days: 1
