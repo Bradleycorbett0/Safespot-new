@@ -23,7 +23,7 @@ android.release_artifact = aab
 android.minapi = 21
 
 android.ndk = 25b
-android.ndk_api = 21
+android.ndk_api = 24
 
 android.sdk_build_tools_version = 33.0.2
 
