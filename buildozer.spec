@@ -2,8 +2,8 @@
 
 title = SafeSpot
 
-package.name = safespot
-package.domain = com.bradleycorbettjones
+package.name = bradleycorbettjones
+package.domain = com
 
 source.dir = .
 
