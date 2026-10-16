@@ -11,6 +11,7 @@ source.include_exts = py,kv,png,jpg,jpeg,json,txt,atlas
 source.include_patterns = *.py,*.json,*.png,*.jpg,*.jpeg,assets/*
 
 version = 1.0
+android.numeric_version = 2
 
 requirements = python3,kivy==2.2.1,requests
 
