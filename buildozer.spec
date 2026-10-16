@@ -11,7 +11,7 @@ source.include_exts = py,kv,png,jpg,jpeg,json,txt,atlas
 source.include_patterns = *.py,*.json,*.png,*.jpg,*.jpeg,assets/*
 
 version = 1.0
-android.numeric_version = 2
+android.numeric_version = 3
 
 requirements = python3,kivy==2.2.1,requests
 
@@ -19,7 +19,7 @@ orientation = portrait
 
 fullscreen = 0
 
-android.api = 35
+android.api = 36
 android.release_artifact = aab
 android.minapi = 24
 
