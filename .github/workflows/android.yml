@@ -49,18 +49,41 @@ jobs:
           python -m pip install cython==0.29.36
           python -m pip install buildozer==1.5.0
 
-      - name: Restore signing keystore
+      - name: Restore and verify signing keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "Missing KEYSTORE_BASE64 secret"
-            exit 1
-          fi
+          set -e
+
+          test -n "$KEYSTORE_BASE64"
+          test -n "$KEYSTORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
 
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/safespot-release.jks"
 
           test -s "$RUNNER_TEMP/safespot-release.jks"
+
+          echo "Checking keystore..."
+
+          keytool -list \
+            -keystore "$RUNNER_TEMP/safespot-release.jks" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS"
+
+          echo "Checking private key password..."
+
+          keytool -certreq \
+            -alias "$KEY_ALIAS" \
+            -keystore "$RUNNER_TEMP/safespot-release.jks" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -file "$RUNNER_TEMP/safespot-test.csr"
+
+          echo "Signing keystore verification successful."
 
       - name: Build signed release AAB
         env:
@@ -68,9 +91,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          test -n "$KEYSTORE_PASSWORD"
-          test -n "$KEY_ALIAS"
-          test -n "$KEY_PASSWORD"
+          set -e
 
           export P4A_RELEASE_KEYSTORE="$RUNNER_TEMP/safespot-release.jks"
           export P4A_RELEASE_KEYSTORE_PASSWD="$KEYSTORE_PASSWORD"
@@ -81,6 +102,8 @@ jobs:
 
       - name: Verify AAB signing
         run: |
+          set -e
+
           AAB=$(find bin -maxdepth 1 -name '*.aab' -print -quit)
 
           if [ -z "$AAB" ]; then
@@ -88,7 +111,7 @@ jobs:
             exit 1
           fi
 
-          jarsigner -verify -verbose -certs "$AAB"
+          jarsigner -verify "$AAB"
 
       - name: Upload signed AAB
         uses: actions/upload-artifact@v4
