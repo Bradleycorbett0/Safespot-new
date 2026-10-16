@@ -20,7 +20,7 @@ fullscreen = 0
 
 android.api = 35
 android.release_artifact = aab
-android.minapi = 21
+android.minapi = 24
 
 android.ndk = 25b
 android.ndk_api = 24
